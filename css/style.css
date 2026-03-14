@@ -1,0 +1,72 @@
+
+.container {max-width: 1200px;margin: 0 auto;}
+
+body {margin:0;font-family:Arial, sans-serif;color:#1a1a1a;}
+header {background:#2d2a26;color:white;padding:10px 40px;display:flex;align-items:center;justify-content:space-between;}
+header nav a {color:white;margin:0 10px;text-decoration:none;font-size:14px;}
+header nav a:hover {text-decoration:underline;}
+.hero {background:#f4f4f2;padding:50px 40px;display:flex;align-items:center;justify-content:space-between;}
+.hero-text {max-width:50%;}
+.hero-text h1 {font-size:36px;margin-bottom:10px;}
+.hero-text p {font-size:18px;margin-bottom:20px;}
+.hero-text .aspNetButton {padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:16px;margin-right:10px;}
+.btn-dark {background:black;color:white;}
+.btn-light {background:white;color:black;border:1px solid #000;}
+.hero img {max-width:40%;border-radius:4px;}
+.steps {padding:40px;display:grid;grid-template-columns:repeat(auto-fit, minmax(250px,1fr));gap:20px;}
+.step {border-top:2px solid #000;padding-top:10px;}
+.step h2 {font-size:24px;margin:10px 0;}
+.step p {font-size:14px;line-height:1.5;}
+
+.menu-button {
+    background-color: white;        
+    color: #333;                    
+    border: none;                   
+    font-size: 16px;
+    font-weight: 700;               
+    border-radius: 20px;            
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+    width:250px;
+    height:120px;
+}
+
+.menu-button:hover {
+    background-color: #f0f0f0;      
+    box-shadow: 0 -4px 6px rgba(0,0,0,0.3);
+}
+
+.header-btns {
+    background-color: black;
+    color: white !important;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s ease-in-out;
+    text-decoration: none !important;
+    display: inline-block;
+  }
+
+.header-btns:hover {
+    background-color: #333; /* thoda lighter black hover ke liye */
+    text-decoration: none !important; /* hover pe bhi underline na ho */
+}
+
+.label-large {
+    padding-bottom: 2px;
+    padding-left: 10px;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.header-border {
+    border-top: 40px solid #000;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+

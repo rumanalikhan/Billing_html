@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Grid with Save</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #gridContainer {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    input {
+      width: 95%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-bottom: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Dynamic Input Grid</h2>
+
+  <!-- Save Button First -->
+  <button onclick="saveData()">Save</button>
+
+  <!-- Grid Container -->
+  <div id="gridContainer">
+    <table id="dataGrid">
+      <thead>
+        <tr>
+          <th>Column 1</th>
+          <th>Column 2</th>
+          <th>Column 3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="text" onkeydown="handleEnter(event, this)"></td>
+          <td><input type="text" onkeydown="handleEnter(event, this)"></td>
+          <td><input type="text" onkeydown="handleEnter(event, this)"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Enter key navigation and dynamic row add
+    function handleEnter(event, input) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const currentCell = input.parentElement;
+        const currentRow = currentCell.parentElement;
+        const currentRowIndex = currentRow.rowIndex - 1; // exclude header
+        const currentCellIndex = currentCell.cellIndex;
+        const table = document.getElementById("dataGrid");
+        const totalRows = table.rows.length - 1; // exclude header
+        const totalCols = table.rows[0].cells.length;
+
+        // Find next column input
+        if (currentCellIndex < totalCols - 1) {
+          currentRow.cells[currentCellIndex + 1].querySelector("input").focus();
+        } else {
+          // If last column, move to next row or create new row
+          if (currentRowIndex === totalRows - 1) {
+            addRow();
+          }
+          table.rows[currentRowIndex + 2].cells[0].querySelector("input").focus();
+        }
+      }
+    }
+
+    // Add a new row
+    function addRow() {
+      const table = document.getElementById("dataGrid").getElementsByTagName("tbody")[0];
+      const newRow = table.insertRow();
+      for (let i = 0; i < 3; i++) {
+        const newCell = newRow.insertCell();
+        const input = document.createElement("input");
+        input.type = "text";
+        input.setAttribute("onkeydown", "handleEnter(event, this)");
+        newCell.appendChild(input);
+      }
+    }
+
+    // Save button -> console data
+    function saveData() {
+      const rows = document.querySelectorAll("#dataGrid tbody tr");
+      let data = [];
+      rows.forEach(row => {
+        let rowData = [];
+        row.querySelectorAll("input").forEach(input => {
+          rowData.push(input.value);
+        });
+        data.push(rowData);
+      });
+      console.log("Grid Data:", data);
+      alert("Data logged in console!");
+    }
+  </script>
+
+</body>
+</html>

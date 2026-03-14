@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bahria Town Karachi</title>
+<style>
+  :root { --gap: 16px; --radius: 16px; --shadow: 0 6px 18px rgba(0,0,0,.08); }
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f6f7f9;}
+  header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 20px;display:flex;gap:12px;align-items:center;}
+  .brand{font-weight:600;}
+  .wrap{max-width:1100px;margin:24px auto;padding:0 16px;}
+  .section{margin-bottom:28px;}
+  .section h2{font-size:14px;font-weight:700;color:#6b7280;margin:0 0 10px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--gap);}
+  .tile{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;cursor:pointer;border:1px solid transparent;transition:.15s;}
+  .tile:hover{transform:translateY(-2px);border-color:#d1d5db;}
+  .tile .title{font-weight:600;margin-bottom:6px;}
+  .tile .desc{font-size:12px;color:#6b7280;}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">PROJECT GL SYSTEM</div>
+    <button class="back-btn" onclick="history.back()">Go back to previous page</button>
+  </header>
+
+  <div class="wrap">
+    <div class="section">
+      <h2>Setup</h2>
+      <div class="grid">
+        <div class="tile" onclick="nav('coa')"><div class="title">Chart of Accounts</div><div class="desc">GL master</div></div>
+        <div class="tile" onclick="nav('subledger')"><div class="title">Sub Ledger</div><div class="desc">AR/AP</div></div>
+        <div class="tile" onclick="nav('booktype')"><div class="title">Book Type</div><div class="desc">Define books</div></div>
+        <div class="tile" onclick="nav('costcenter')"><div class="title">Cost Center</div><div class="desc">Dimensions</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Transactions</h2>
+      <div class="grid">
+        <div class="tile" onclick="nav('bpv')"><div class="title">Bank Payment Voucher</div><div class="desc">Outgoing bank</div></div>
+        <div class="tile" onclick="nav('brv')"><div class="title">Bank Receipt Voucher</div><div class="desc">Incoming bank</div></div>
+        <div class="tile" onclick="nav('cpv')"><div class="title">Cash Payment</div><div class="desc">Cash out</div></div>
+        <div class="tile" onclick="nav('crv')"><div class="title">Cash Receipt</div><div class="desc">Cash in</div></div>
+        <div class="tile" onclick="nav('jv')"><div class="title">Journal General</div><div class="desc">Manual entries</div></div>
+        <div class="tile" onclick="nav('jvtemplate')"><div class="title">JV Template</div><div class="desc">Recurring</div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function nav(route){ alert('Navigate to: '+route); /* hook to your Web Forms pages */ }
+  const q = document.getElementById('q');
+  q.addEventListener('input', e=>{
+    const term = e.target.value.toLowerCase();
+    document.querySelectorAll('.tile').forEach(t=>{
+      const text = t.innerText.toLowerCase();
+      t.style.display = text.includes(term) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>
