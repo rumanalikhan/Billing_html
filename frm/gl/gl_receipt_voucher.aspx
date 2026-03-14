@@ -728,7 +728,7 @@
                         </td>
                         <td class="header-label">Book Type:</td>
                         <td class="header-value">
-                            <asp:DropDownList ID="ddlBookType" runat="server" Width="140px"
+                            <asp:DropDownList ID="ddlBookType" runat="server" Width="220px"
                                 DataTextField="BOOK_TYPE" DataValueField="GL_CODE"
                                 AutoPostBack="true" OnSelectedIndexChanged="ddlBookType_SelectedIndexChanged" />
                         </td>

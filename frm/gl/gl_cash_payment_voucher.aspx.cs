@@ -502,7 +502,7 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
             ddlBookType.DataTextField = "GL_CODE";
             ddlBookType.DataValueField = "GL_CODE";
             ddlBookType.DataBind();
-            ddlBookType.Items.Insert(0, new ListItem("-- Select Cash Payment Account --", ""));
+            ddlBookType.Items.Insert(0, new ListItem("-- Select Cash Type --", ""));
         }
     }
 
