@@ -111,7 +111,7 @@
         }
         
         .transaction-header {
-            background: #2ecc71;
+            background: #0f7c57;
         }
         
         .reporting-header {
@@ -154,7 +154,7 @@
         }
         
         .transaction-item i {
-            color: #2ecc71;
+            color: #0f7c57;
         }
         
         .reporting-item i {

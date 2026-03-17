@@ -44,77 +44,89 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
         }
     }
 
-    // Menu item click handlers for GL system
+    // Setup Menu Item Click Handler
     protected void SetupMenuItem_Click(object sender, EventArgs e)
     {
-        // You can add specific logic for each menu item here
-        string menuItem = ((LinkButton)sender).ID;
-        
-        switch (menuItem)
+        LinkButton btn = (LinkButton)sender;
+        string buttonId = btn.ID;
+
+        switch (buttonId)
         {
-            case "btnChartOfAccounts":
-                Response.Redirect("~/gl/chart_of_accounts.aspx");
+            case "lnkCOA":
+                Response.Redirect("~/frm/gl/setup/chart_of_accounts.aspx");
                 break;
             case "btnSubLedger":
-                Response.Redirect("~/gl/chart_of_accounts_sub.aspx");
+                Response.Redirect("~/frm/gl/setup/coa_sub_ledger.aspx");
                 break;
-            case "btnBooksType":
-                Response.Redirect("~/gl/books_type.aspx");
+            case "btnBooksType":  
+                Response.Redirect("~/frm/books_type.aspx");
                 break;
-            case "btnCostCenter":
-                Response.Redirect("~/gl/cost_center.aspx");
+            case "btnCostCenter": 
+                Response.Redirect("~/frm/cost_center.aspx");
+                break;
+            default:
+                ClientScript.RegisterStartupScript(this.GetType(), "alert",
+                    "alert('Menu item not configured: " + buttonId + "');", true);
                 break;
         }
     }
 
-    protected void lnkCOA_Click(object sender, EventArgs e)
-    {
-        Response.Redirect("coa.aspx");
-    }
+    // Transaction Menu Item Click Handler
     protected void TransactionMenuItem_Click(object sender, EventArgs e)
     {
-        string menuItem = ((LinkButton)sender).ID;
-        
-        switch (menuItem)
+        LinkButton btn = (LinkButton)sender;
+        string buttonId = btn.ID;
+
+        switch (buttonId)
         {
             case "btnBankReceiveables":
-                Response.Redirect("~/frm/gl/gl_receipt_voucher.aspx");  
+                Response.Redirect("~/frm/gl/transactions/gl_receipt_voucher.aspx");
                 break;
             case "btnBankPayables":
-                Response.Redirect("~/frm/gl/gl_payment_voucher.aspx");  
+                Response.Redirect("~/frm/gl/transactions/gl_payment_voucher.aspx");
                 break;
             case "btnCashReceiveables":
-                Response.Redirect("~/frm/gl/gl_cash_receipt_voucher.aspx");  
+                Response.Redirect("~/frm/gl/transactions/gl_cash_receipt_voucher.aspx");
                 break;
             case "btnCashPayables":
-                Response.Redirect("~/frm/gl/gl_cash_payment_voucher.aspx");  
+                Response.Redirect("~/frm/gl/transactions/gl_cash_payment_voucher.aspx");
                 break;
             case "btnJournalVoucher":
-                Response.Redirect("~/frm/gl/gl_journal_voucher.aspx");  
+                Response.Redirect("~/frm/gl/transactions/gl_journal_voucher.aspx");
+                break;
+            default:
+                ClientScript.RegisterStartupScript(this.GetType(), "alert",
+                    "alert('Transaction menu item not configured: " + buttonId + "');", true);
                 break;
         }
     }
 
+    // Reporting Menu Item Click Handler
     protected void ReportingMenuItem_Click(object sender, EventArgs e)
     {
-        string menuItem = ((LinkButton)sender).ID;
-        
-        switch (menuItem)
+        LinkButton btn = (LinkButton)sender;
+        string buttonId = btn.ID;
+
+        switch (buttonId)
         {
             case "btnAuditTrial":
-                Response.Redirect("~/gl/audit_trial.aspx");
+                Response.Redirect("~/frm/gl/audit_trial.aspx");
                 break;
             case "btnJournalGeneral":
-                Response.Redirect("~/gl/journal_general.aspx");
+                Response.Redirect("~/frm/gl/journal_general.aspx");
                 break;
             case "btnJournalGeneralSub":
-                Response.Redirect("~/gl/journal_general_sub.aspx");
+                Response.Redirect("~/frm/gl/journal_general_sub.aspx");
                 break;
             case "btnTrialBalance":
-                Response.Redirect("~/gl/trial_balance.aspx");
+                Response.Redirect("~/frm/gl/trial_balance.aspx");
                 break;
             case "btnTrialBalanceSub":
-                Response.Redirect("~/gl/trial_balance_sub.aspx");
+                Response.Redirect("~/frm/gl/trial_balance_sub.aspx");
+                break;
+            default:
+                ClientScript.RegisterStartupScript(this.GetType(), "alert",
+                    "alert('Reporting menu item not configured: " + buttonId + "');", true);
                 break;
         }
     }

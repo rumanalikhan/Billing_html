@@ -7,7 +7,7 @@ using System.Data;
 using System.Configuration;
 using System.Text;
 
-public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
+public partial class GL_Payment_Voucher : System.Web.UI.Page
 {
     private string connectionString = ConfigurationManager.ConnectionStrings["BackOfficeConnection"].ConnectionString;
     private DataTable dtVoucherDetails;
@@ -40,6 +40,22 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
             //}
         }
     }
+    #endregion
+
+    #region Header Methods
+
+    protected void btnGoBack_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("~/main_menu/main_menu_gl.aspx", false);
+    }
+
+    protected void btnLogoff_Click(object sender, EventArgs e)
+    {
+        Session.Clear();
+        Session.Abandon();
+        Response.Redirect("~/login/Login.aspx", false);
+    }
+
     #endregion
 
     #region Grid Operations
@@ -487,10 +503,10 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
     {
         using (OracleConnection conn = new OracleConnection(connectionString))
         {
-            // FOR CASH RECEIPT: Only load GL codes where BOOK_TYPE = 'CRV'
+            // FOR PAYMENT VOUCHER: Only load GL codes where BOOK_TYPE = 'GPV'
             string query = @"SELECT bt.GL_CODE 
                         FROM GL_BOOK_TYPE bt
-                        WHERE bt.BOOK_TYPE = 'CRV' 
+                        WHERE bt.BOOK_TYPE = 'GPV' 
                         AND bt.GL_CODE IS NOT NULL 
                         ORDER BY bt.GL_CODE";
 
@@ -502,7 +518,7 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
             ddlBookType.DataTextField = "GL_CODE";
             ddlBookType.DataValueField = "GL_CODE";
             ddlBookType.DataBind();
-            ddlBookType.Items.Insert(0, new ListItem("-- Select Cash Type --", ""));
+            ddlBookType.Items.Insert(0, new ListItem("-- Select Book Type --", ""));
         }
     }
 
@@ -584,17 +600,17 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
 
     private string GetBookTypeFromGLCode(string glCode)
     {
-        if (string.IsNullOrEmpty(glCode)) return "CRV";
+        if (string.IsNullOrEmpty(glCode)) return "GPV";
 
         using (OracleConnection conn = new OracleConnection(connectionString))
         {
-            string query = "SELECT BOOK_TYPE FROM GL_BOOK_TYPE WHERE GL_CODE = :glCode AND BOOK_TYPE = 'CRV' AND ROWNUM = 1";
+            string query = "SELECT BOOK_TYPE FROM GL_BOOK_TYPE WHERE GL_CODE = :glCode AND BOOK_TYPE = 'GPV' AND ROWNUM = 1";
             OracleCommand cmd = new OracleCommand(query, conn);
             cmd.Parameters.Add("glCode", OracleDbType.Varchar2).Value = glCode;
 
             conn.Open();
             object result = cmd.ExecuteScalar();
-            return result != null ? result.ToString() : "CRV";
+            return result != null ? result.ToString() : "GPV";
         }
     }
 
@@ -695,12 +711,12 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
                     {
                         string deleteVoucherQuery = "DELETE FROM GL_VOUCHERS WHERE VOUCHER_KEY = :voucherKey";
                         OracleCommand deleteVoucherCmd = new OracleCommand(deleteVoucherQuery, conn);
-                        deleteVoucherCmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblcrv.Text;
+                        deleteVoucherCmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblgpv.Text;
                         deleteVoucherCmd.ExecuteNonQuery();
 
                         string deleteFormQuery = "DELETE FROM GL_FORMS WHERE VOUCHER_KEY = :voucherKey";
                         OracleCommand deleteFormCmd = new OracleCommand(deleteFormQuery, conn);
-                        deleteFormCmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblcrv.Text;
+                        deleteFormCmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblgpv.Text;
                         deleteFormCmd.ExecuteNonQuery();
                     }
 
@@ -739,6 +755,7 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
         int rowsSaved = 0;
         string debitGLCode = ddlBookType.SelectedValue;
         string bookType = GetBookTypeFromGLCode(debitGLCode);
+        int transactionLogId = GetCurrentLogId();
 
         foreach (DataRow row in dtVoucherDetails.Rows)
         {
@@ -776,12 +793,12 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
 
                 // Insert Credit entry (DRCR_NUMBER = 1)
                 InsertVoucherEntry(conn, transaction, ref lineNumber, bookType, creditGLCode,
-                    slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "2", narration, amount, 1);
+                    slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "1", narration, amount, 1, transactionLogId);
                 rowsSaved++;
 
                 // Insert Debit entry (DRCR_NUMBER = 2)
                 InsertVoucherEntry(conn, transaction, ref lineNumber, bookType, debitGLCode,
-                    slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "1", narration, amount, 2);
+                    slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "2", narration, amount, 2, transactionLogId);
                 rowsSaved++;
             }
             catch (Exception ex)
@@ -796,21 +813,21 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
 
     private void InsertVoucherEntry(OracleConnection conn, OracleTransaction transaction, ref int lineNumber,
     string bookType, string glCode, int slTypeId, string actualSLCode, int costCentreCode,
-    string billNumber, string chequeNumber, string drCr, string narration, decimal amount, int drcrNumber)
+    string billNumber, string chequeNumber, string drCr, string narration, decimal amount, int drcrNumber, int logId)
     {
          System.Diagnostics.Debug.WriteLine("SL_CODE value being inserted: '{actualSLCode}', Length: {actualSLCode.Length}");
         string query = @"INSERT INTO GL_VOUCHERS 
                 (VOUCHER_KEY, GL_BOOK_TYPE, VOUCHER_NUMBER, LINE_NUMBER, 
                  DRCR_NUMBER, GL_CODE, SL_TYPE, SL_CODE, COST_CENTRE_CODE,
-                 BILL_NUMBER, CHEQUE_NUMBER, DR_CR, NARATION, AMOUNT, COMP_ID)
+                 BILL_NUMBER, CHEQUE_NUMBER, DR_CR, NARATION, AMOUNT, COMP_ID, LOG_ID)
                 VALUES 
                 (:voucherKey, :glBookType, :voucherNumber, :lineNumber,
                  :drcrNumber, :glCode, :slType, :slCode, :costCentreCode,
-                 :billNumber, :chequeNumber, :drCr, :naration, :amount, :compId)";
+                 :billNumber, :chequeNumber, :drCr, :naration, :amount, :compId, :logId)";
 
         OracleCommand cmd = new OracleCommand(query, conn);
 
-        cmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblcrv.Text;
+        cmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblgpv.Text;
         cmd.Parameters.Add("glBookType", OracleDbType.Varchar2).Value = bookType;
         cmd.Parameters.Add("voucherNumber", OracleDbType.Int32).Value = Convert.ToInt32(lblVoucherNumber.Text);
         cmd.Parameters.Add("lineNumber", OracleDbType.Int32).Value = lineNumber++;
@@ -824,8 +841,8 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
         cmd.Parameters.Add("drCr", OracleDbType.Varchar2).Value = drCr;
         cmd.Parameters.Add("naration", OracleDbType.Varchar2).Value = string.IsNullOrEmpty(narration) ? (object)DBNull.Value : narration;
         cmd.Parameters.Add("amount", OracleDbType.Decimal).Value = amount;
-        cmd.Parameters.Add("compId", OracleDbType.Int32).Value = Convert.ToInt32(hfCompId.Value);
-
+        cmd.Parameters.Add("compId", OracleDbType.Int32).Value = GetCurrentCompId(); // Use helper
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId(); // Add LOG_ID
         cmd.ExecuteNonQuery();
     }
 
@@ -890,7 +907,7 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
             if (parts.Length >= 3)
             {
                 lblVoucherNumber.Text = parts[2];
-                lblcrv.Text = voucherKey;
+                lblgpv.Text = voucherKey;
 
                 string bookType = parts[1];
                 ListItem item = ddlBookType.Items.FindByValue(GetGLCodeFromBookType(bookType));
@@ -998,7 +1015,7 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
     {
         // Parse date from voucher key or use current date
         DateTime voucherDate;
-        string[] keyParts = lblcrv.Text.Split('-');
+        string[] keyParts = lblgpv.Text.Split('-');
 
         if (!DateTime.TryParse(txtVoucherDate.Text, out voucherDate))
         {
@@ -1014,17 +1031,17 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
 
         OracleCommand cmd = new OracleCommand(query, conn);
 
-        cmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblcrv.Text;
+        cmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblgpv.Text;
         cmd.Parameters.Add("voucherDate", OracleDbType.Date).Value = voucherDate;
 
         // VOUCHER_NUMBER and GL_FORM_NUMBER are the same
         int voucherNum = Convert.ToInt32(lblVoucherNumber.Text);
         cmd.Parameters.Add("voucherNumber", OracleDbType.Int32).Value = voucherNum;
 
-        string bookType = "CRV"; // Default
-        if (!string.IsNullOrEmpty(lblcrv.Text))
+        string bookType = "GPV"; // Default
+        if (!string.IsNullOrEmpty(lblgpv.Text))
         {
-            string[] parts = lblcrv.Text.Split('-');
+            string[] parts = lblgpv.Text.Split('-');
             if (parts.Length >= 2)
                 bookType = parts[1];
         }
@@ -1033,9 +1050,8 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
         // GL_FORM_NUMBER is the same as VOUCHER_NUMBER
         cmd.Parameters.Add("glFormNumber", OracleDbType.Int32).Value = voucherNum;
         cmd.Parameters.Add("compId", OracleDbType.Int32).Value = Convert.ToInt32(hfCompId.Value);
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = 0; // Default log_id
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId(); // Use helper
         cmd.Parameters.Add("post", OracleDbType.Int32).Value = (lblStatus.Text == "Posted") ? 1 : 0;
-
         cmd.ExecuteNonQuery();
     }
     #endregion
@@ -1049,9 +1065,9 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
     private void GenerateVoucherKey()
     {
         string bookType = GetBookTypeFromGLCode(ddlBookType.SelectedValue);
-        if (string.IsNullOrEmpty(bookType)) bookType = "CRV";
+        if (string.IsNullOrEmpty(bookType)) bookType = "GPV";
 
-        lblcrv.Text = "1-" + bookType + "-" + lblVoucherNumber.Text;
+        lblgpv.Text = "1-" + bookType + "-" + lblVoucherNumber.Text;
     }
 
     private void GenerateNewVoucherNumber()
@@ -1075,17 +1091,17 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
 
                 // Generate voucher key with book type
                 string bookType = GetBookTypeFromGLCode(ddlBookType.SelectedValue);
-                if (string.IsNullOrEmpty(bookType)) bookType = "CRV";
+                if (string.IsNullOrEmpty(bookType)) bookType = "GPV";
 
-                lblcrv.Text = "1-" + bookType + "-" + newVoucherNo.ToString();
+                lblgpv.Text = "1-" + bookType + "-" + newVoucherNo.ToString();
             }
         }
         catch (Exception ex)
         {
             LogError("GenerateNewVoucherNumber", ex);
             lblVoucherNumber.Text = "1";
-            string bookType = string.IsNullOrEmpty(ddlBookType.SelectedValue) ? "CRV" : ddlBookType.SelectedValue;
-            lblcrv.Text = "1-" + bookType + "-1";
+            string bookType = string.IsNullOrEmpty(ddlBookType.SelectedValue) ? "GPV" : ddlBookType.SelectedValue;
+            lblgpv.Text = "1-" + bookType + "-1";
         }
     }
 
@@ -1152,7 +1168,7 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
     protected void btnPrevious_Click(object sender, EventArgs e)
     {
         List<string> keys = GetVoucherKeys();
-        int index = keys.IndexOf(lblcrv.Text);
+        int index = keys.IndexOf(lblgpv.Text);
 
         if (index > 0)
         {
@@ -1167,7 +1183,7 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
     protected void btnNext_Click(object sender, EventArgs e)
     {
         List<string> keys = GetVoucherKeys();
-        int index = keys.IndexOf(lblcrv.Text);
+        int index = keys.IndexOf(lblgpv.Text);
 
         if (index < keys.Count - 1)
         {
@@ -1446,6 +1462,20 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
         System.Diagnostics.Debug.WriteLine(errorMessage);
 
     }
+    #endregion
+
+    #region Logging Helpers
+
+    private int GetCurrentLogId()
+    {
+        return LogHelper.GetCurrentLogId(Session, Request);
+    }
+
+    private int GetCurrentCompId()
+    {
+        return Session["CurrentCompId"] != null ? Convert.ToInt32(Session["CurrentCompId"]) : 1;
+    }
+
     #endregion
 
     public string script { get; set; }

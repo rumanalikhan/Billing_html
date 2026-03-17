@@ -1,11 +1,11 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="gl_cash_payment_voucher.aspx.cs" Inherits="GL_Cash_Payment_Voucher" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="gl_journal_voucher.aspx.cs" Inherits="GL_Journal_Voucher" %>
 
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="ajaxToolkit" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
-    <title>Cash Payment Voucher</title>
+    <title>Journal Voucher</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -23,6 +23,26 @@
             height: 100vh;
             overflow: hidden;
         }
+
+        /* Header buttons matching theme */
+        .header-btns {
+            background-color: black;
+            color: white !important;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out;
+            text-decoration: none !important;
+            display: inline-block;
+        }
+
+            .header-btns:hover {
+                background-color: #0a5e40;
+                text-decoration: none !important;
+            }
 
         /* ===== MAIN CONTAINER ===== */
         .container {
@@ -90,7 +110,7 @@
         }
 
         .save-btn {
-            color: #4f9c52;
+            color: #0f7c57;
         }
 
         .clear-btn {
@@ -102,7 +122,7 @@
         }
 
         .add-btn {
-            color: #4CAF50;
+            color: #0f7c57;
             font-size: 16px;
             padding: 8px 16px;
         }
@@ -125,7 +145,7 @@
         }
 
         .save-btn:hover {
-            color: #388E3C;
+            color: #0f7c57;
         }
 
         .clear-btn:hover {
@@ -199,7 +219,7 @@
         }
 
             .gridview-style th {
-                background-color: #4CAF50;
+                background-color: #0f7c57;
                 color: white;
                 padding: 10px 5px;
                 text-align: left;
@@ -232,9 +252,9 @@
             }
 
                 .gridview-style input[type="text"]:focus {
-                    border-color: #4CAF50;
+                    border-color: #0f7c57;
                     outline: none;
-                    box-shadow: 0 0 3px #4CAF50;
+                    box-shadow: 0 0 3px #0f7c57;
                 }
 
             .gridview-style tfoot tr {
@@ -256,7 +276,7 @@
         }
 
         .col-gl-type {
-            width: 90px;
+            width: 100px;
         }
 
         .col-sl-code {
@@ -268,7 +288,7 @@
         }
 
         .col-narration {
-            width: 120px;
+            width: 100px;
         }
 
         .col-bill {
@@ -276,7 +296,7 @@
         }
 
         .col-cheque {
-            width: 100px;
+            width: 70px;
         }
 
         .col-amount {
@@ -374,7 +394,7 @@
             }
 
                 .ui-autocomplete .ui-menu-item:hover {
-                    background-color: #4CAF50;
+                    background-color: #0f7c57;
                     color: white;
                     cursor: pointer;
                 }
@@ -416,7 +436,7 @@
 
         .modal-header {
             padding: 15px;
-            background-color: #4CAF50;
+            background-color: #0f7c57;
             color: white;
             border-radius: 5px 5px 0 0;
         }
@@ -480,7 +500,7 @@
             }
 
             .snackbar-inline.success {
-                background-color: #4CAF50;
+                background-color: #0f7c57;
             }
 
             .snackbar-inline.error {
@@ -526,7 +546,7 @@
                 source: function (request, response) {
                     $.ajax({
                         type: "POST",
-                        url: "GL_Cash_Payment_Voucher.aspx/SearchGLCodes",
+                        url: "GL_Journal_Voucher.aspx/SearchGLCodes",
                         data: JSON.stringify({ searchTerm: request.term }),
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
@@ -575,7 +595,7 @@
 
                     $.ajax({
                         type: "POST",
-                        url: "GL_Cash_Payment_Voucher.aspx/SearchSLCodes",
+                        url: "GL_Journal_Voucher.aspx/SearchSLCodes",
                         data: JSON.stringify({ searchTerm: request.term, glCode: glCode }),
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
@@ -669,10 +689,21 @@
 <body>
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server" />
-
         <div class="container">
-            <h2>Cash Payment Voucher</h2>
-
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin: 0;">Journal Voucher</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <asp:Label ID="Label1" runat="server" ForeColor="Blue" Font-Bold="true" />
+                    <asp:LinkButton ID="LinkButton1" runat="server"
+                        CssClass="header-btns"
+                        OnClick="btnGoBack_Click"
+                        CausesValidation="false">Go Back</asp:LinkButton>
+                    <asp:LinkButton ID="LinkButton2" runat="server"
+                        CssClass="header-btns"
+                        OnClick="btnLogoff_Click"
+                        CausesValidation="false">Log off</asp:LinkButton>
+                </div>
+            </div>
             <!-- Button Panel -->
             <div class="button-panel">
                 <asp:LinkButton ID="btnCopyVoucher" runat="server" CssClass="icon-btn copy-btn"
@@ -726,15 +757,15 @@
                         <td class="header-value">
                             <asp:Label ID="lblVoucherNumber" runat="server" Font-Bold="true" Text="407" />
                         </td>
-                        <td class="header-label">Cash Type:</td>
+                        <%--<td class="header-label">Journal Type:</td>
                         <td class="header-value">
-                            <asp:DropDownList ID="ddlBookType" runat="server" Width="220px"
+                            <asp:DropDownList ID="ddlBookType" runat="server" Width="140px"
                                 DataTextField="BOOK_TYPE" DataValueField="GL_CODE"
                                 AutoPostBack="true" OnSelectedIndexChanged="ddlBookType_SelectedIndexChanged" />
-                        </td>
-                        <td class="header-label">CPV:</td>
+                        </td>--%>
+                        <td class="header-label">GJV:</td>
                         <td class="header-value">
-                            <asp:Label ID="lblcpv" runat="server" Text="Auto-generated" CssClass="voucher-key" />
+                            <asp:Label ID="lblGJV" runat="server" Text="Auto-generated" CssClass="voucher-key" />
                         </td>
                     </tr>
                 </table>
@@ -752,6 +783,7 @@
             </div>
             <!-- Voucher Details Grid -->
             <div class="grid-container">
+                <!-- Voucher Details Grid - Replace the Columns section -->
                 <asp:GridView ID="gvVoucherDetails" runat="server"
                     CssClass="gridview-style"
                     AutoGenerateColumns="False"
@@ -819,12 +851,32 @@
                             </ItemTemplate>
                         </asp:TemplateField>
 
-                        <asp:TemplateField HeaderText="Amount" HeaderStyle-CssClass="col-amount">
+                        <asp:TemplateField HeaderText="Debit" HeaderStyle-CssClass="col-amount">
                             <ItemTemplate>
-                                <asp:TextBox ID="txtAmount" runat="server" Text='<%# Bind("AMOUNT", "{0:N2}") %>'
-                                    OnTextChanged="txtAmount_TextChanged" AutoPostBack="true"
-                                    placeholder="0.00" Style="text-align: right;" />
+                                <asp:TextBox ID="txtDebit" runat="server"
+                                    Text='<%# Bind("DEBIT", "{0:N2}") %>'
+                                    OnTextChanged="txtDebit_TextChanged"
+                                    AutoPostBack="true"
+                                    placeholder="0.00"
+                                    Style="text-align: right;" />
                             </ItemTemplate>
+                            <%-- <FooterTemplate>
+                <asp:Label ID="lblTotalDebit" runat="server" Font-Bold="true" Style="display: block; text-align: right; padding-right: 5px;"></asp:Label>
+            </FooterTemplate>--%>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField HeaderText="Credit" HeaderStyle-CssClass="col-amount">
+                            <ItemTemplate>
+                                <asp:TextBox ID="txtCredit" runat="server"
+                                    Text='<%# Bind("CREDIT", "{0:N2}") %>'
+                                    OnTextChanged="txtCredit_TextChanged"
+                                    AutoPostBack="true"
+                                    placeholder="0.00"
+                                    Style="text-align: right;" />
+                            </ItemTemplate>
+                            <%-- <FooterTemplate>
+                <asp:Label ID="lblTotalCredit" runat="server" Font-Bold="true" Style="display: block; text-align: right; padding-right: 5px;"></asp:Label>
+            </FooterTemplate>--%>
                         </asp:TemplateField>
 
                         <asp:TemplateField HeaderText="Cost Centre" HeaderStyle-CssClass="col-cost">
@@ -911,7 +963,7 @@
                                     <ItemTemplate>
                                         <asp:LinkButton ID="lnkSelect" runat="server" CommandName="SelectVoucher"
                                             CommandArgument='<%# Eval("VOUCHER_KEY") %>'
-                                            CssClass="grid-icon" Style="color: #4CAF50; text-decoration: none; font-weight: bold;">
+                                            CssClass="grid-icon" Style="color: #0f7c57; text-decoration: none; font-weight: bold;">
                                             <i class="fas fa-check-circle"></i>
                                         </asp:LinkButton>
                                     </ItemTemplate>

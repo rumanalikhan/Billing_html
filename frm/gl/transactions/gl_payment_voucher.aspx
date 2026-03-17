@@ -24,6 +24,26 @@
             overflow: hidden;
         }
 
+        /* Header buttons matching theme */
+        .header-btns {
+            background-color: black;
+            color: white !important;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out;
+            text-decoration: none !important;
+            display: inline-block;
+        }
+
+            .header-btns:hover {
+                background-color: #0a5e40;
+                text-decoration: none !important;
+            }
+
         /* ===== MAIN CONTAINER ===== */
         .container {
             width: 100%;
@@ -90,7 +110,7 @@
         }
 
         .save-btn {
-            color: #4f9c52;
+            color: #0f7c57;
         }
 
         .clear-btn {
@@ -102,7 +122,7 @@
         }
 
         .add-btn {
-            color: #4CAF50;
+            color: #0f7c57;
             font-size: 16px;
             padding: 8px 16px;
         }
@@ -125,7 +145,7 @@
         }
 
         .save-btn:hover {
-            color: #388E3C;
+            color: #0f7c57;
         }
 
         .clear-btn:hover {
@@ -199,7 +219,7 @@
         }
 
             .gridview-style th {
-                background-color: #4CAF50;
+                background-color: #0f7c57;
                 color: white;
                 padding: 10px 5px;
                 text-align: left;
@@ -232,9 +252,9 @@
             }
 
                 .gridview-style input[type="text"]:focus {
-                    border-color: #4CAF50;
+                    border-color: #0f7c57;
                     outline: none;
-                    box-shadow: 0 0 3px #4CAF50;
+                    box-shadow: 0 0 3px #0f7c57;
                 }
 
             .gridview-style tfoot tr {
@@ -374,7 +394,7 @@
             }
 
                 .ui-autocomplete .ui-menu-item:hover {
-                    background-color: #4CAF50;
+                    background-color: #0f7c57;
                     color: white;
                     cursor: pointer;
                 }
@@ -416,7 +436,7 @@
 
         .modal-header {
             padding: 15px;
-            background-color: #4CAF50;
+            background-color: #0f7c57;
             color: white;
             border-radius: 5px 5px 0 0;
         }
@@ -480,7 +500,7 @@
             }
 
             .snackbar-inline.success {
-                background-color: #4CAF50;
+                background-color: #0f7c57;
             }
 
             .snackbar-inline.error {
@@ -669,9 +689,23 @@
 <body>
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server" />
-
         <div class="container">
-            <h2>Bank Payment Voucher</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin: 0;">Bank Payment Voucher</h2>
+
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <asp:Label ID="Label1" runat="server" ForeColor="Blue" Font-Bold="true" />
+                    <asp:LinkButton ID="LinkButton1" runat="server"
+                        CssClass="header-btns"
+                        OnClick="btnGoBack_Click"
+                        CausesValidation="false">Go Back</asp:LinkButton>
+                    <asp:LinkButton ID="LinkButton2" runat="server"
+                        CssClass="header-btns"
+                        OnClick="btnLogoff_Click"
+                        CausesValidation="false">Log off</asp:LinkButton>
+                </div>
+            </div>
+
 
             <!-- Button Panel -->
             <div class="button-panel">
@@ -911,7 +945,7 @@
                                     <ItemTemplate>
                                         <asp:LinkButton ID="lnkSelect" runat="server" CommandName="SelectVoucher"
                                             CommandArgument='<%# Eval("VOUCHER_KEY") %>'
-                                            CssClass="grid-icon" Style="color: #4CAF50; text-decoration: none; font-weight: bold;">
+                                            CssClass="grid-icon" Style="color: #0f7c57; text-decoration: none; font-weight: bold;">
                                             <i class="fas fa-check-circle"></i>
                                         </asp:LinkButton>
                                     </ItemTemplate>
