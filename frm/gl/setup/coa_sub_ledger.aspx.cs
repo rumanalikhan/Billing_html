@@ -173,6 +173,9 @@ public partial class coa_sub_legder : System.Web.UI.Page
             if (!ValidateForm())
                 return;
 
+            // CREATE NEW LOG ENTRY FOR THIS TRANSACTION
+            int transactionLogId = LogHelper.CreateTransactionLog(Session, Request);
+
             using (OracleConnection conn = new OracleConnection(connectionString))
             {
                 conn.Open();
@@ -188,10 +191,13 @@ public partial class coa_sub_legder : System.Web.UI.Page
                         DeleteExistingRecords(conn, slCode);
                     }
 
-                    InsertIntoGLSLGLMF(conn);
-                    InsertIntoOpeningBalance(conn);
+                    InsertIntoGLSLGLMF(conn, transactionLogId);
+                    InsertIntoOpeningBalance(conn, transactionLogId);
 
                     transaction.Commit();
+
+                    // Update session with new log ID for next transaction
+                    Session["CurrentLogId"] = transactionLogId;
 
                     ShowMessage("Sub Ledger saved successfully!");
                     ShowStatus("Record saved successfully!", "success");
@@ -225,18 +231,18 @@ public partial class coa_sub_legder : System.Web.UI.Page
         deleteOBCmd.ExecuteNonQuery();
     }
 
-    private void InsertIntoGLSLGLMF(OracleConnection conn)
+    private void InsertIntoGLSLGLMF(OracleConnection conn, int transactionLogId)
     {
         string query = @"INSERT INTO GL_SL_GLMF 
-                        (SL_CODE, DESCRIP, CONTACT_PERSON, NTN, STN, 
-                         ADD1, ADD2, CITY, CONTACT1, CONTACT2, CONTACT3,
-                         CELL1, CELL2, FAX1, FAX2, EMAIL1, EMAIL2, URLL,
-                         REMARKS, COMP_ID, SUB_LEDGER_ID, LOG_ID)
-                        VALUES 
-                        (:slCode, :descrip, :contactPerson, :ntn, :stn,
-                         :add1, :add2, :city, :contact1, :contact2, :contact3,
-                         :cell1, :cell2, :fax1, :fax2, :email1, :email2, :url,
-                         :remarks, :compId, :subLedgerId, :logId)";
+                    (SL_CODE, DESCRIP, CONTACT_PERSON, NTN, STN, 
+                     ADD1, ADD2, CITY, CONTACT1, CONTACT2, CONTACT3,
+                     CELL1, CELL2, FAX1, FAX2, EMAIL1, EMAIL2, URLL,
+                     REMARKS, COMP_ID, SUB_LEDGER_ID, LOG_ID)
+                    VALUES 
+                    (:slCode, :descrip, :contactPerson, :ntn, :stn,
+                     :add1, :add2, :city, :contact1, :contact2, :contact3,
+                     :cell1, :cell2, :fax1, :fax2, :email1, :email2, :url,
+                     :remarks, :compId, :subLedgerId, :logId)";
 
         OracleCommand cmd = new OracleCommand(query, conn);
 
@@ -261,20 +267,20 @@ public partial class coa_sub_legder : System.Web.UI.Page
         cmd.Parameters.Add("remarks", OracleDbType.Varchar2).Value = string.IsNullOrEmpty(txtRemarks.Text) ? (object)DBNull.Value : txtRemarks.Text.Trim();
         cmd.Parameters.Add("compId", OracleDbType.Int32).Value = GetCurrentCompId();
         cmd.Parameters.Add("subLedgerId", OracleDbType.Int32).Value = Convert.ToInt32(hfSubLedgerId.Value);
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId();
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = transactionLogId;
 
         cmd.ExecuteNonQuery();
     }
 
-    private void InsertIntoOpeningBalance(OracleConnection conn)
+    private void InsertIntoOpeningBalance(OracleConnection conn, int transactionLogId)
     {
         decimal openingBalance = 0;
         decimal.TryParse(txtOpeningBalance.Text, out openingBalance);
 
         string query = @"INSERT INTO GL_SL_OPENING_BALANCE 
-                        (OPENING_BALANCE, COMP_ID, SUB_LEDGER_ID, SL_CODE, LOG_ID)
-                        VALUES 
-                        (:openingBalance, :compId, :subLedgerId, :slCode, :logId)";
+                    (OPENING_BALANCE, COMP_ID, SUB_LEDGER_ID, SL_CODE, LOG_ID)
+                    VALUES 
+                    (:openingBalance, :compId, :subLedgerId, :slCode, :logId)";
 
         OracleCommand cmd = new OracleCommand(query, conn);
 
@@ -282,7 +288,7 @@ public partial class coa_sub_legder : System.Web.UI.Page
         cmd.Parameters.Add("compId", OracleDbType.Int32).Value = GetCurrentCompId();
         cmd.Parameters.Add("subLedgerId", OracleDbType.Int32).Value = Convert.ToInt32(hfSubLedgerId.Value);
         cmd.Parameters.Add("slCode", OracleDbType.Varchar2).Value = txtSLCode.Text.Trim();
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId();
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = transactionLogId;
 
         cmd.ExecuteNonQuery();
     }

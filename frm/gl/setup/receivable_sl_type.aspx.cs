@@ -45,14 +45,14 @@ public partial class receivable_sl_type : System.Web.UI.Page
 
     protected void btnGoBack_Click(object sender, EventArgs e)
     {
-        Response.Redirect("~/main_menu/main_menu_gl.aspx");
+        Response.Redirect("~/main_menu/main_menu_gl.aspx", false);
     }
 
     protected void btnLogoff_Click(object sender, EventArgs e)
     {
         Session.Clear();
         Session.Abandon();
-        Response.Redirect("~/login/Login.aspx");
+        Response.Redirect("~/login/Login.aspx", false);
     }
 
     #endregion
@@ -141,6 +141,9 @@ public partial class receivable_sl_type : System.Web.UI.Page
             if (!ValidateForm())
                 return;
 
+            // CREATE NEW LOG ENTRY FOR THIS TRANSACTION
+            int transactionLogId = LogHelper.CreateTransactionLog(Session, Request);
+
             using (OracleConnection conn = new OracleConnection(connectionString))
             {
                 conn.Open();
@@ -156,9 +159,12 @@ public partial class receivable_sl_type : System.Web.UI.Page
                         deleteCmd.ExecuteNonQuery();
                     }
 
-                    InsertIntoSLType(conn);
+                    InsertIntoSLType(conn, transactionLogId);
 
                     transaction.Commit();
+
+                    // Update session with new log ID for next transaction
+                    Session["CurrentLogId"] = transactionLogId;
 
                     ShowMessage("Receivable SL Type saved successfully!");
                     ShowStatus("Record saved successfully!", "success");
@@ -181,7 +187,7 @@ public partial class receivable_sl_type : System.Web.UI.Page
         }
     }
 
-    private void InsertIntoSLType(OracleConnection conn)
+    private void InsertIntoSLType(OracleConnection conn, int transactionLogId)
     {
         string query = @"INSERT INTO GL_SL_TYPE 
                         (SUB_LEDGER_ID, DESCRIP, COMP_ID, GL_CODE, FAMILY, LOG_ID)
@@ -195,7 +201,7 @@ public partial class receivable_sl_type : System.Web.UI.Page
         cmd.Parameters.Add("compId", OracleDbType.Int32).Value = GetCurrentCompId();
         cmd.Parameters.Add("glCode", OracleDbType.Varchar2).Value = txtGLCode.Text.Trim();
         cmd.Parameters.Add("family", OracleDbType.Varchar2).Value = string.IsNullOrEmpty(txtFamily.Text) ? (object)DBNull.Value : txtFamily.Text.Trim();
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId();
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = transactionLogId;
 
         cmd.ExecuteNonQuery();
     }

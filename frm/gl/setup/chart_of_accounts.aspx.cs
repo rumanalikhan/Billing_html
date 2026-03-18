@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.Configuration;
@@ -308,18 +309,21 @@ public partial class chart_of_accounts : System.Web.UI.Page
     /* BUTTONS */
     protected void btnGoBack_Click(object sender, EventArgs e)
     {
-        Response.Redirect("~/main_menu/main_menu_bs.aspx");
+        Response.Redirect("~/main_menu/main_menu_gl.aspx", false);
     }
 
     protected void btnLogoff_Click(object sender, EventArgs e)
     {
         Session.Clear();
         Session.Abandon();
-        Response.Redirect("~/login/Login.aspx");
+        Response.Redirect("~/login/Login.aspx", false);
     }
 
     protected void btnSave_Click(object sender, EventArgs e)
     {
+        // CREATE NEW LOG ENTRY FOR THIS TRANSACTION
+        int transactionLogId = LogHelper.CreateTransactionLog(Session, Request);
+
         using (OracleConnection conn = new OracleConnection(connStr))
         {
             conn.Open();
@@ -335,8 +339,9 @@ public partial class chart_of_accounts : System.Web.UI.Page
                 string genDetail = txtGenDetail.Text;
                 string active = txtAI.Text;
 
-                int compId = 1;
-                int logId = 1; // you said use current LOG_ID — replace if stored somewhere
+                int compId = GetCurrentCompId(); // Use helper instead of hardcoded 1
+                // Use transactionLogId instead of hardcoded 1
+                int logId = transactionLogId;
 
                 decimal obValue = 0;
                 if (!string.IsNullOrWhiteSpace(txtOB.Text))
@@ -358,12 +363,12 @@ public partial class chart_of_accounts : System.Web.UI.Page
                 {
                     // ================= INSERT GL_GLMF =================
                     string insertDetails = @"
-                    INSERT INTO GL_GLMF
-                    (GL_CODE, GL_DESCRP, FAMILY, PARENTT, LEVELL,
-                     GENERAL_DETAIL, ACTIVE, COMP_ID, LOG_ID)
-                    VALUES
-                    (:code, :gl_desc, :family, :parent,
-                     :lvl, :gen, :active, :comp, :log)";
+                INSERT INTO GL_GLMF
+                (GL_CODE, GL_DESCRP, FAMILY, PARENTT, LEVELL,
+                 GENERAL_DETAIL, ACTIVE, COMP_ID, LOG_ID)
+                VALUES
+                (:code, :gl_desc, :family, :parent,
+                 :lvl, :gen, :active, :comp, :log)";
 
                     OracleCommand cmdInsert = new OracleCommand(insertDetails, conn);
                     cmdInsert.Transaction = trans;
@@ -385,9 +390,9 @@ public partial class chart_of_accounts : System.Web.UI.Page
                     if (level == 4)
                     {
                         string insertOB = @"
-                        INSERT INTO GL_GLMF_OB
-                        (GL_OB_KEY, GL_CODE, OPENING_BALANCE, COMP_ID, LOG_ID)
-                        VALUES (:key, :code, :ob, :comp, :log)";
+                    INSERT INTO GL_GLMF_OB
+                    (GL_OB_KEY, GL_CODE, OPENING_BALANCE, COMP_ID, LOG_ID)
+                    VALUES (:key, :code, :ob, :comp, :log)";
 
                         OracleCommand cmdInsertOB = new OracleCommand(insertOB, conn);
                         cmdInsertOB.Transaction = trans;
@@ -406,9 +411,9 @@ public partial class chart_of_accounts : System.Web.UI.Page
                 {
                     // ================= UPDATE =================
                     string updateSql = @"
-                    UPDATE GL_GLMF
-                    SET GL_DESCRP = :gl_desc
-                    WHERE GL_CODE = :code";
+                UPDATE GL_GLMF
+                SET GL_DESCRP = :gl_desc
+                WHERE GL_CODE = :code";
 
                     OracleCommand cmdUpdate = new OracleCommand(updateSql, conn);
                     cmdUpdate.Transaction = trans;
@@ -422,14 +427,14 @@ public partial class chart_of_accounts : System.Web.UI.Page
                     if (level == 4)
                     {
                         string updateOB = @"
-                        MERGE INTO GL_GLMF_OB ob
-                        USING (SELECT :code AS GL_CODE FROM dual) src
-                        ON (ob.GL_CODE = src.GL_CODE AND ob.COMP_ID = :comp)
-                        WHEN MATCHED THEN
-                            UPDATE SET ob.OPENING_BALANCE = :ob
-                        WHEN NOT MATCHED THEN
-                            INSERT (GL_OB_KEY, GL_CODE, OPENING_BALANCE, COMP_ID, LOG_ID)
-                            VALUES (:key, :code, :ob, :comp, :log)";
+                    MERGE INTO GL_GLMF_OB ob
+                    USING (SELECT :code AS GL_CODE FROM dual) src
+                    ON (ob.GL_CODE = src.GL_CODE AND ob.COMP_ID = :comp)
+                    WHEN MATCHED THEN
+                        UPDATE SET ob.OPENING_BALANCE = :ob
+                    WHEN NOT MATCHED THEN
+                        INSERT (GL_OB_KEY, GL_CODE, OPENING_BALANCE, COMP_ID, LOG_ID)
+                        VALUES (:key, :code, :ob, :comp, :log)";
 
                         OracleCommand cmdMerge = new OracleCommand(updateOB, conn);
                         cmdMerge.Transaction = trans;
@@ -446,6 +451,9 @@ public partial class chart_of_accounts : System.Web.UI.Page
                 }
 
                 trans.Commit();
+
+                // Update session with new log ID for next transaction
+                Session["CurrentLogId"] = transactionLogId;
 
                 // 🔄 Refresh UI
                 LoadSingleAccount(code);
@@ -468,6 +476,16 @@ public partial class chart_of_accounts : System.Web.UI.Page
                 lblStatus.Text = "Error: " + ex.Message;
             }
         }
+    }
+
+    private int GetCurrentLogId()
+    {
+        return LogHelper.GetCurrentLogId(Session, Request);
+    }
+
+    private int GetCurrentCompId()
+    {
+        return Session["CurrentCompId"] != null ? Convert.ToInt32(Session["CurrentCompId"]) : 1;
     }
 
     protected void btnCancel_Click(object sender, EventArgs e)

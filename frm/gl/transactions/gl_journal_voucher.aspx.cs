@@ -563,6 +563,9 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
                 return;
             }
 
+            // CREATE NEW LOG ENTRY FOR THIS TRANSACTION
+            int transactionLogId = LogHelper.CreateTransactionLog(Session, Request);
+
             using (OracleConnection conn = new OracleConnection(connectionString))
             {
                 conn.Open();
@@ -584,11 +587,11 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
                     }
 
                     int lineNumber = 1;
-                    int savedRows = SaveVoucherEntries(conn, transaction, ref lineNumber);
-
-                    InsertIntoGLForms(conn);
+                    int savedRows = SaveVoucherEntries(conn, transaction, ref lineNumber, transactionLogId);
+                    InsertIntoGLForms(conn, transactionLogId);
 
                     transaction.Commit();
+                    Session["CurrentLogId"] = transactionLogId;
 
                     ShowSnackbar("Voucher saved successfully! " + savedRows + " entries saved.", "success");
                     hfCurrentMode.Value = "EDIT";
@@ -608,7 +611,7 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
         }
     }
 
-    private int SaveVoucherEntries(OracleConnection conn, OracleTransaction transaction, ref int lineNumber)
+    private int SaveVoucherEntries(OracleConnection conn, OracleTransaction transaction, ref int lineNumber, int transactionLogId)
     {
         dtVoucherDetails = (DataTable)ViewState["VoucherDetails"];
 
@@ -616,7 +619,6 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
 
         int rowsSaved = 0;
         string bookType = "GJV"; // Fixed book type for Journal Voucher
-        int transactionLogId = GetCurrentLogId();
 
         foreach (DataRow row in dtVoucherDetails.Rows)
         {
@@ -671,17 +673,17 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
     }
 
     private void InsertVoucherEntry(OracleConnection conn, OracleTransaction transaction, ref int lineNumber,
-        string bookType, string glCode, int slTypeId, string actualSLCode, int costCentreCode,
-        string billNumber, string chequeNumber, string drCr, string narration, decimal amount, int drcrNumber, int logId)
+    string bookType, string glCode, int slTypeId, string actualSLCode, int costCentreCode,
+    string billNumber, string chequeNumber, string drCr, string narration, decimal amount, int drcrNumber, int logId)
     {
         string query = @"INSERT INTO GL_VOUCHERS 
-                (VOUCHER_KEY, GL_BOOK_TYPE, VOUCHER_NUMBER, LINE_NUMBER, 
-                 DRCR_NUMBER, GL_CODE, SL_TYPE, SL_CODE, COST_CENTRE_CODE,
-                 BILL_NUMBER, CHEQUE_NUMBER, DR_CR, NARATION, AMOUNT, COMP_ID,LOG_ID)
-                VALUES 
-                (:voucherKey, :glBookType, :voucherNumber, :lineNumber,
-                 :drcrNumber, :glCode, :slType, :slCode, :costCentreCode,
-                 :billNumber, :chequeNumber, :drCr, :naration, :amount, :compId, :logId)";
+            (VOUCHER_KEY, GL_BOOK_TYPE, VOUCHER_NUMBER, LINE_NUMBER, 
+             DRCR_NUMBER, GL_CODE, SL_TYPE, SL_CODE, COST_CENTRE_CODE,
+             BILL_NUMBER, CHEQUE_NUMBER, DR_CR, NARATION, AMOUNT, COMP_ID, LOG_ID)
+            VALUES 
+            (:voucherKey, :glBookType, :voucherNumber, :lineNumber,
+             :drcrNumber, :glCode, :slType, :slCode, :costCentreCode,
+             :billNumber, :chequeNumber, :drCr, :naration, :amount, :compId, :logId)";
 
         OracleCommand cmd = new OracleCommand(query, conn);
 
@@ -699,8 +701,9 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
         cmd.Parameters.Add("drCr", OracleDbType.Varchar2).Value = drCr;
         cmd.Parameters.Add("naration", OracleDbType.Varchar2).Value = string.IsNullOrEmpty(narration) ? (object)DBNull.Value : narration;
         cmd.Parameters.Add("amount", OracleDbType.Decimal).Value = amount;
-        cmd.Parameters.Add("compId", OracleDbType.Int32).Value = GetCurrentCompId(); // Use helper
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId(); // Add LOG_ID
+        cmd.Parameters.Add("compId", OracleDbType.Int32).Value = GetCurrentCompId();
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = logId;
+
         cmd.ExecuteNonQuery();
     }
 
@@ -820,7 +823,7 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
         }
     }
 
-    private void InsertIntoGLForms(OracleConnection conn)
+    private void InsertIntoGLForms(OracleConnection conn, int transactionLogId)
     {
         DateTime voucherDate;
         if (!DateTime.TryParse(txtVoucherDate.Text, out voucherDate))
@@ -829,11 +832,11 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
         }
 
         string query = @"INSERT INTO GL_FORMS 
-                    (VOUCHER_KEY, VOUCHER_DATE, VOUCHER_NUMBER, BOOK_TYPE, 
-                     GL_FORM_NUMBER, COMP_ID, LOG_ID, POST)
-                    VALUES 
-                    (:voucherKey, :voucherDate, :voucherNumber, :bookType,
-                     :glFormNumber, :compId, :logId, :post)";
+                (VOUCHER_KEY, VOUCHER_DATE, VOUCHER_NUMBER, BOOK_TYPE, 
+                 GL_FORM_NUMBER, COMP_ID, LOG_ID, POST)
+                VALUES 
+                (:voucherKey, :voucherDate, :voucherNumber, :bookType,
+                 :glFormNumber, :compId, :logId, :post)";
 
         OracleCommand cmd = new OracleCommand(query, conn);
 
@@ -848,8 +851,9 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
 
         cmd.Parameters.Add("glFormNumber", OracleDbType.Int32).Value = voucherNum;
         cmd.Parameters.Add("compId", OracleDbType.Int32).Value = Convert.ToInt32(hfCompId.Value);
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId(); // Use helper
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = transactionLogId;
         cmd.Parameters.Add("post", OracleDbType.Int32).Value = (lblStatus.Text == "Posted") ? 1 : 0;
+
         cmd.ExecuteNonQuery();
     }
     #endregion

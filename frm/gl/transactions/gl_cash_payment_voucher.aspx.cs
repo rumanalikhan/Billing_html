@@ -699,6 +699,7 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
             ViewState["VoucherDetails"] = dtVoucherDetails;
 
             if (!ValidateVoucher()) return;
+            int transactionLogId = LogHelper.CreateTransactionLog(Session, Request);
 
             using (OracleConnection conn = new OracleConnection(connectionString))
             {
@@ -721,11 +722,15 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
                     }
 
                     int lineNumber = 1;
-                    int savedRows = SaveVoucherEntries(conn, transaction, ref lineNumber);
+                    int savedRows = SaveVoucherEntries(conn, transaction, ref lineNumber, transactionLogId);
 
-                    InsertIntoGLForms(conn);
+                    // FIX: Pass the transactionLogId to InsertIntoGLForms
+                    InsertIntoGLForms(conn, transactionLogId);
 
                     transaction.Commit();
+
+                    // Update session with new log ID for next transaction
+                    Session["CurrentLogId"] = transactionLogId;
 
                     ShowSnackbar("Voucher saved successfully! " + savedRows + " entries saved.", "success");
                     hfCurrentMode.Value = "EDIT";
@@ -746,7 +751,7 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
     }
 
 
-    private int SaveVoucherEntries(OracleConnection conn, OracleTransaction transaction, ref int lineNumber)
+    private int SaveVoucherEntries(OracleConnection conn, OracleTransaction transaction, ref int lineNumber, int transactionLogId)
     {
         dtVoucherDetails = (DataTable)ViewState["VoucherDetails"];
 
@@ -755,7 +760,9 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
         int rowsSaved = 0;
         string debitGLCode = ddlBookType.SelectedValue;
         string bookType = GetBookTypeFromGLCode(debitGLCode);
-        int transactionLogId = GetCurrentLogId();
+
+        // REMOVED: int transactionLogId = GetCurrentLogId(); - now using parameter
+
         foreach (DataRow row in dtVoucherDetails.Rows)
         {
             string creditGLCode = row["GL_CODE"] != null ? row["GL_CODE"].ToString() : "";
@@ -772,14 +779,12 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
 
             try
             {
-                // SL_TYPE contains SUB_LEDGER_ID (numeric)
                 int slTypeId = 0;
                 if (row["SL_TYPE"] != null && !string.IsNullOrEmpty(row["SL_TYPE"].ToString()))
                 {
                     int.TryParse(row["SL_TYPE"].ToString(), out slTypeId);
                 }
 
-                // SL_CODE contains the actual SL_CODE string (like 'AF0455') - max 15 chars
                 string actualSLCode = row["SL_CODE"] != null ? row["SL_CODE"].ToString() : "";
 
                 int costCentreCode = 0;
@@ -790,12 +795,11 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
                 string chequeNumber = row["CHEQUE_NUMBER"] != null ? row["CHEQUE_NUMBER"].ToString() : "";
                 string narration = row["NARATION"] != null ? row["NARATION"].ToString() : "";
 
-                // Insert Credit entry (DRCR_NUMBER = 1)
+                // Use the passed transactionLogId
                 InsertVoucherEntry(conn, transaction, ref lineNumber, bookType, creditGLCode,
                     slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "1", narration, amount, 1, transactionLogId);
                 rowsSaved++;
 
-                // Insert Debit entry (DRCR_NUMBER = 2)
                 InsertVoucherEntry(conn, transaction, ref lineNumber, bookType, debitGLCode,
                     slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "2", narration, amount, 2, transactionLogId);
                 rowsSaved++;
@@ -841,7 +845,7 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
         cmd.Parameters.Add("naration", OracleDbType.Varchar2).Value = string.IsNullOrEmpty(narration) ? (object)DBNull.Value : narration;
         cmd.Parameters.Add("amount", OracleDbType.Decimal).Value = amount;
         cmd.Parameters.Add("compId", OracleDbType.Int32).Value = GetCurrentCompId(); // Use helper
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId();
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = logId; 
         cmd.ExecuteNonQuery();
     }
 
@@ -1010,7 +1014,7 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
         }
     }
 
-    private void InsertIntoGLForms(OracleConnection conn)
+    private void InsertIntoGLForms(OracleConnection conn, int transactionLogId)
     {
         // Parse date from voucher key or use current date
         DateTime voucherDate;
@@ -1022,18 +1026,17 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
         }
 
         string query = @"INSERT INTO GL_FORMS 
-                    (VOUCHER_KEY, VOUCHER_DATE, VOUCHER_NUMBER, BOOK_TYPE, 
-                     GL_FORM_NUMBER, COMP_ID, LOG_ID, POST)
-                    VALUES 
-                    (:voucherKey, :voucherDate, :voucherNumber, :bookType,
-                     :glFormNumber, :compId, :logId, :post)";
+                (VOUCHER_KEY, VOUCHER_DATE, VOUCHER_NUMBER, BOOK_TYPE, 
+                 GL_FORM_NUMBER, COMP_ID, LOG_ID, POST)
+                VALUES 
+                (:voucherKey, :voucherDate, :voucherNumber, :bookType,
+                 :glFormNumber, :compId, :logId, :post)";
 
         OracleCommand cmd = new OracleCommand(query, conn);
 
         cmd.Parameters.Add("voucherKey", OracleDbType.Varchar2).Value = lblcpv.Text;
         cmd.Parameters.Add("voucherDate", OracleDbType.Date).Value = voucherDate;
 
-        // VOUCHER_NUMBER and GL_FORM_NUMBER are the same
         int voucherNum = Convert.ToInt32(lblVoucherNumber.Text);
         cmd.Parameters.Add("voucherNumber", OracleDbType.Int32).Value = voucherNum;
 
@@ -1046,11 +1049,11 @@ public partial class GL_Cash_Payment_Voucher : System.Web.UI.Page
         }
         cmd.Parameters.Add("bookType", OracleDbType.Varchar2).Value = bookType;
 
-        // GL_FORM_NUMBER is the same as VOUCHER_NUMBER
         cmd.Parameters.Add("glFormNumber", OracleDbType.Int32).Value = voucherNum;
         cmd.Parameters.Add("compId", OracleDbType.Int32).Value = Convert.ToInt32(hfCompId.Value);
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId(); 
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = transactionLogId; // Now using parameter
         cmd.Parameters.Add("post", OracleDbType.Int32).Value = (lblStatus.Text == "Posted") ? 1 : 0;
+
         cmd.ExecuteNonQuery();
     }
     #endregion

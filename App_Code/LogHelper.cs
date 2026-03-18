@@ -4,7 +4,8 @@ using System.Web.SessionState;
 using Oracle.ManagedDataAccess.Client;
 using System.Configuration;
 using System.Data;
-
+using System.Net;
+using System.Net.Sockets;
 public static class LogHelper
 {
     private static string connectionString = ConfigurationManager.ConnectionStrings["BackOfficeConnection"].ConnectionString;
@@ -111,7 +112,7 @@ public static class LogHelper
     }
 
     /// <summary>
-    /// Creates a new log entry for each transaction (if you want separate log per transaction)
+    /// Creates a new log entry for each transaction
     /// </summary>
     public static int CreateTransactionLog(HttpSessionState session, HttpRequest request)
     {
@@ -127,24 +128,55 @@ public static class LogHelper
             compId = Convert.ToInt32(session["CurrentCompId"]);
         }
 
-        string userIp = "0.0.0.0";
-        if (request != null && request.UserHostAddress != null)
-        {
-            userIp = request.UserHostAddress;
-        }
-
+        // Get proper IP addresses
+        string userIp = GetIPv4Address(request);
         string hostName = Environment.MachineName;
-        if (string.IsNullOrEmpty(hostName))
+        string systemIp = GetLocalIPAddress();
+
+        return CreateLogEntry(loginId, compId, userIp, hostName, systemIp);
+    }
+
+    // Helper method to get IPv4 from request
+    private static string GetIPv4Address(HttpRequest request)
+    {
+        if (request == null) return "0.0.0.0";
+
+        string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+        if (!string.IsNullOrEmpty(ipAddress))
         {
-            hostName = "UNKNOWN";
+            string[] addresses = ipAddress.Split(',');
+            if (addresses.Length > 0)
+                return addresses[0];
         }
 
-        string wndoId = userIp;
-        if (session != null && session.SessionID != null)
-        {
-            wndoId = session.SessionID;
-        }
+        ipAddress = request.ServerVariables["REMOTE_ADDR"];
+        if (ipAddress == "::1")
+            return "127.0.0.1";
 
-        return CreateLogEntry(loginId, compId, userIp, hostName, wndoId);
+        return ipAddress ?? "0.0.0.0";
+    }
+
+    // Helper method to get local system IP
+    private static string GetLocalIPAddress()
+    {
+        try
+        {
+            string hostName = Dns.GetHostName();
+            IPHostEntry hostEntry = Dns.GetHostEntry(hostName);
+
+            foreach (IPAddress ip in hostEntry.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    if (!ip.ToString().StartsWith("169.254"))
+                        return ip.ToString();
+                }
+            }
+            return "127.0.0.1";
+        }
+        catch
+        {
+            return "127.0.0.1";
+        }
     }
 }

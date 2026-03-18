@@ -142,6 +142,9 @@ public partial class payable_sl_type : System.Web.UI.Page
             if (!ValidateForm())
                 return;
 
+            // CREATE NEW LOG ENTRY FOR THIS TRANSACTION
+            int transactionLogId = LogHelper.CreateTransactionLog(Session, Request);
+
             using (OracleConnection conn = new OracleConnection(connectionString))
             {
                 conn.Open();
@@ -151,23 +154,23 @@ public partial class payable_sl_type : System.Web.UI.Page
                 {
                     if (hfCurrentMode.Value == "EDIT")
                     {
-                        // Delete existing record for edit mode
                         string deleteQuery = "DELETE FROM GL_SL_TYPE WHERE SUB_LEDGER_ID = :id";
                         OracleCommand deleteCmd = new OracleCommand(deleteQuery, conn);
                         deleteCmd.Parameters.Add("id", OracleDbType.Int32).Value = Convert.ToInt32(hfSubLedgerId.Value);
                         deleteCmd.ExecuteNonQuery();
                     }
 
-                    // Insert new record
-                    InsertIntoSLType(conn);
+                    InsertIntoSLType(conn, transactionLogId);
 
                     transaction.Commit();
 
-                    ShowMessage("Payable SL Type saved successfully!");
+                    // Update session with new log ID for next transaction
+                    Session["CurrentLogId"] = transactionLogId;
+
+                    ShowMessage("Receivable SL Type saved successfully!");
                     ShowStatus("Record saved successfully!", "success");
                     hfCurrentMode.Value = "EDIT";
 
-                    // Generate new ID for next record
                     GenerateNewSLId();
                 }
                 catch (Exception ex)
@@ -185,12 +188,12 @@ public partial class payable_sl_type : System.Web.UI.Page
         }
     }
 
-    private void InsertIntoSLType(OracleConnection conn)
+    private void InsertIntoSLType(OracleConnection conn, int transactionLogId)
     {
         string query = @"INSERT INTO GL_SL_TYPE 
-                        (SUB_LEDGER_ID, DESCRIP, COMP_ID, GL_CODE, FAMILY, LOG_ID)
-                        VALUES 
-                        (:subLedgerId, :descrip, :compId, :glCode, :family, :logId)";
+                    (SUB_LEDGER_ID, DESCRIP, COMP_ID, GL_CODE, FAMILY, LOG_ID)
+                    VALUES 
+                    (:subLedgerId, :descrip, :compId, :glCode, :family, :logId)";
 
         OracleCommand cmd = new OracleCommand(query, conn);
 
@@ -199,7 +202,7 @@ public partial class payable_sl_type : System.Web.UI.Page
         cmd.Parameters.Add("compId", OracleDbType.Int32).Value = GetCurrentCompId();
         cmd.Parameters.Add("glCode", OracleDbType.Varchar2).Value = txtGLCode.Text.Trim();
         cmd.Parameters.Add("family", OracleDbType.Varchar2).Value = string.IsNullOrEmpty(txtFamily.Text) ? (object)DBNull.Value : txtFamily.Text.Trim();
-        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = GetCurrentLogId();
+        cmd.Parameters.Add("logId", OracleDbType.Int32).Value = transactionLogId;
 
         cmd.ExecuteNonQuery();
     }
