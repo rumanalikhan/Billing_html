@@ -9,7 +9,11 @@ public partial class Login : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        // no-op; you can log or show messages here if needed
+        // Clear any existing session on page load
+        if (!IsPostBack)
+        {
+            Session.Clear(); // Start fresh
+        }
     }
 
     private string GetIPv4Address()
@@ -24,7 +28,7 @@ public partial class Login : System.Web.UI.Page
 
         ipAddress = Request.ServerVariables["REMOTE_ADDR"];
         if (ipAddress == "::1")
-            return "127.0.0.1"; // Convert IPv6 localhost to IPv4
+            return "127.0.0.1";
 
         return ipAddress;
     }
@@ -33,22 +37,18 @@ public partial class Login : System.Web.UI.Page
     {
         try
         {
-            // Get the local machine's IP address (from ipconfig)
             string hostName = Dns.GetHostName();
             IPHostEntry hostEntry = Dns.GetHostEntry(hostName);
 
             foreach (IPAddress ip in hostEntry.AddressList)
             {
-                // Look for IPv4 addresses that are not loopback (127.0.0.1)
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    // Skip automatic private IP addressing if needed
                     if (!ip.ToString().StartsWith("169.254"))
                         return ip.ToString();
                 }
             }
 
-            // Fallback to first IPv4 found
             foreach (IPAddress ip in hostEntry.AddressList)
             {
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
@@ -65,10 +65,10 @@ public partial class Login : System.Web.UI.Page
 
     protected void btnSubmit_Click(object sender, EventArgs e)
     {
-        lblMessage.Text = ""; // clear previous
+        lblMessage.Text = "";
 
         string username = txtUser.Text.Trim();
-        string password = txtPass.Text; // do not trim password
+        string password = txtPass.Text;
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
@@ -115,26 +115,22 @@ public partial class Login : System.Web.UI.Page
                     {
                         if (dr.Read())
                         {
-                            // USER_IP: The IP from which the request came (network IP)
                             string userIp = GetIPv4Address();
-
-                            // WNDO_ID: The local system IP (from ipconfig)
                             string systemIp = GetLocalIPAddress();
 
-                            //session values
                             Session["login_id"] = dr["ID"].ToString();
                             Session["login_name"] = dr["USER_NAME"].ToString();
                             Session["system_date"] = DateTime.Now;
                             Session["system_ip"] = userIp;
                             Session["User"] = username;
 
-                            // Create log entry using LogHelper class
+                            // Create ONE log entry for login
                             int logId = LogHelper.CreateLogEntry(
                                 dr["ID"].ToString(),
-                                1, // compId - default to 1
-                                userIp,                     // USER_IP (network IP)
-                                Environment.MachineName,    // HOST_NAME (computer name)
-                                systemIp                    // WNDO_ID (system IP from ipconfig)
+                                1,
+                                userIp,
+                                Environment.MachineName,
+                                systemIp
                             );
 
                             Session["CurrentLogId"] = logId;

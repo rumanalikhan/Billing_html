@@ -152,7 +152,7 @@ public partial class chart_of_accounts : System.Web.UI.Page
                                g.GL_DESCRP AS Description,
                                NVL(ob.OPENING_BALANCE, 0) AS Opening_Balance
                         FROM GL_GLMF g
-                        LEFT JOIN GL_GLMF_OB ob
+                        LEFT JOIN GL_GLMF_OPENING_BALANCE ob
                                ON g.GL_CODE = ob.GL_CODE
                                AND ob.COMP_ID = 1
                         WHERE g.PARENTT = :parent
@@ -218,7 +218,7 @@ public partial class chart_of_accounts : System.Web.UI.Page
     private void LoadOpeningBalance(string code, OracleConnection conn)
     {
         string sql = @"SELECT OPENING_BALANCE
-                   FROM GL_GLMF_OB
+                   FROM GL_GLMF_OPENING_BALANCE
                    WHERE GL_CODE = :code";
 
         OracleCommand cmd = new OracleCommand(sql, conn);
@@ -339,8 +339,7 @@ public partial class chart_of_accounts : System.Web.UI.Page
                 string genDetail = txtGenDetail.Text;
                 string active = txtAI.Text;
 
-                int compId = GetCurrentCompId(); // Use helper instead of hardcoded 1
-                // Use transactionLogId instead of hardcoded 1
+                int compId = GetCurrentCompId();
                 int logId = transactionLogId;
 
                 decimal obValue = 0;
@@ -363,26 +362,28 @@ public partial class chart_of_accounts : System.Web.UI.Page
                 {
                     // ================= INSERT GL_GLMF =================
                     string insertDetails = @"
-                INSERT INTO GL_GLMF
-                (GL_CODE, GL_DESCRP, FAMILY, PARENTT, LEVELL,
-                 GENERAL_DETAIL, ACTIVE, COMP_ID, LOG_ID)
-                VALUES
-                (:code, :gl_desc, :family, :parent,
-                 :lvl, :gen, :active, :comp, :log)";
+            INSERT INTO GL_GLMF
+            (GL_CODE, GL_DESCRP, FAMILY, PARENTT, LEVELL,
+             GENERAL_DETAIL, ACTIVE, COMP_ID, LOG_ID, GL_CODE_KEY)
+            VALUES
+            (:code, :gl_desc, :family, :parent,
+             :lvl, :gen, :active, :comp, :log, :codeKey)";  // ← Changed :code to :codeKey for GL_CODE_KEY
 
                     OracleCommand cmdInsert = new OracleCommand(insertDetails, conn);
                     cmdInsert.Transaction = trans;
                     cmdInsert.BindByName = true;
 
-                    cmdInsert.Parameters.Add("code", code);
-                    cmdInsert.Parameters.Add("gl_desc", desc);
-                    cmdInsert.Parameters.Add("family", family);
-                    cmdInsert.Parameters.Add("parent", parent);
-                    cmdInsert.Parameters.Add("lvl", level);
-                    cmdInsert.Parameters.Add("gen", genDetail);
-                    cmdInsert.Parameters.Add("active", active);
-                    cmdInsert.Parameters.Add("comp", compId);
-                    cmdInsert.Parameters.Add("log", logId);
+                    // Add parameters with unique names
+                    cmdInsert.Parameters.Add("code", OracleDbType.Varchar2).Value = code;        // For GL_CODE
+                    cmdInsert.Parameters.Add("gl_desc", OracleDbType.Varchar2).Value = desc;
+                    cmdInsert.Parameters.Add("family", OracleDbType.Varchar2).Value = family;
+                    cmdInsert.Parameters.Add("parent", OracleDbType.Varchar2).Value = parent;
+                    cmdInsert.Parameters.Add("lvl", OracleDbType.Int32).Value = level;
+                    cmdInsert.Parameters.Add("gen", OracleDbType.Varchar2).Value = genDetail;
+                    cmdInsert.Parameters.Add("active", OracleDbType.Varchar2).Value = active;
+                    cmdInsert.Parameters.Add("comp", OracleDbType.Int32).Value = compId;
+                    cmdInsert.Parameters.Add("log", OracleDbType.Int32).Value = logId;            // This is your LOG_ID from USER_OP_LOG
+                    cmdInsert.Parameters.Add("codeKey", OracleDbType.Varchar2).Value = code;      // For GL_CODE_KEY (separate parameter)
 
                     cmdInsert.ExecuteNonQuery();
 
@@ -390,19 +391,19 @@ public partial class chart_of_accounts : System.Web.UI.Page
                     if (level == 4)
                     {
                         string insertOB = @"
-                    INSERT INTO GL_GLMF_OB
-                    (GL_OB_KEY, GL_CODE, OPENING_BALANCE, COMP_ID, LOG_ID)
-                    VALUES (:key, :code, :ob, :comp, :log)";
+                INSERT INTO GL_GLMF_OPENING_BALANCE
+                (GL_OB_KEY, GL_CODE, OPENING_BALANCE, COMP_ID, LOG_ID)
+                VALUES (:key, :code, :ob, :comp, :log)";
 
                         OracleCommand cmdInsertOB = new OracleCommand(insertOB, conn);
                         cmdInsertOB.Transaction = trans;
                         cmdInsertOB.BindByName = true;
 
-                        cmdInsertOB.Parameters.Add("key", Guid.NewGuid().ToString());
-                        cmdInsertOB.Parameters.Add("code", code);
-                        cmdInsertOB.Parameters.Add("ob", obValue);
-                        cmdInsertOB.Parameters.Add("comp", compId);
-                        cmdInsertOB.Parameters.Add("log", logId);
+                        cmdInsertOB.Parameters.Add("key", OracleDbType.Varchar2).Value = Guid.NewGuid().ToString();
+                        cmdInsertOB.Parameters.Add("code", OracleDbType.Varchar2).Value = code;
+                        cmdInsertOB.Parameters.Add("ob", OracleDbType.Decimal).Value = obValue;
+                        cmdInsertOB.Parameters.Add("comp", OracleDbType.Int32).Value = compId;
+                        cmdInsertOB.Parameters.Add("log", OracleDbType.Int32).Value = logId;
 
                         cmdInsertOB.ExecuteNonQuery();
                     }
@@ -411,40 +412,40 @@ public partial class chart_of_accounts : System.Web.UI.Page
                 {
                     // ================= UPDATE =================
                     string updateSql = @"
-                UPDATE GL_GLMF
-                SET GL_DESCRP = :gl_desc
-                WHERE GL_CODE = :code";
+            UPDATE GL_GLMF
+            SET GL_DESCRP = :gl_desc
+            WHERE GL_CODE = :code";
 
                     OracleCommand cmdUpdate = new OracleCommand(updateSql, conn);
                     cmdUpdate.Transaction = trans;
                     cmdUpdate.BindByName = true;
 
-                    cmdUpdate.Parameters.Add("gl_desc", desc);
-                    cmdUpdate.Parameters.Add("code", code);
+                    cmdUpdate.Parameters.Add("gl_desc", OracleDbType.Varchar2).Value = desc;
+                    cmdUpdate.Parameters.Add("code", OracleDbType.Varchar2).Value = code;
 
                     cmdUpdate.ExecuteNonQuery();
 
                     if (level == 4)
                     {
                         string updateOB = @"
-                    MERGE INTO GL_GLMF_OB ob
-                    USING (SELECT :code AS GL_CODE FROM dual) src
-                    ON (ob.GL_CODE = src.GL_CODE AND ob.COMP_ID = :comp)
-                    WHEN MATCHED THEN
-                        UPDATE SET ob.OPENING_BALANCE = :ob
-                    WHEN NOT MATCHED THEN
-                        INSERT (GL_OB_KEY, GL_CODE, OPENING_BALANCE, COMP_ID, LOG_ID)
-                        VALUES (:key, :code, :ob, :comp, :log)";
+                MERGE INTO GL_GLMF_OPENING_BALANCE ob
+                USING (SELECT :code AS GL_CODE FROM dual) src
+                ON (ob.GL_CODE = src.GL_CODE AND ob.COMP_ID = :comp)
+                WHEN MATCHED THEN
+                    UPDATE SET ob.OPENING_BALANCE = :ob
+                WHEN NOT MATCHED THEN
+                    INSERT (GL_OB_KEY, GL_CODE, OPENING_BALANCE, COMP_ID, LOG_ID)
+                    VALUES (:key, :code, :ob, :comp, :log)";
 
                         OracleCommand cmdMerge = new OracleCommand(updateOB, conn);
                         cmdMerge.Transaction = trans;
                         cmdMerge.BindByName = true;
 
-                        cmdMerge.Parameters.Add("code", code);
-                        cmdMerge.Parameters.Add("comp", compId);
-                        cmdMerge.Parameters.Add("ob", obValue);
-                        cmdMerge.Parameters.Add("key", Guid.NewGuid().ToString());
-                        cmdMerge.Parameters.Add("log", logId);
+                        cmdMerge.Parameters.Add("code", OracleDbType.Varchar2).Value = code;
+                        cmdMerge.Parameters.Add("comp", OracleDbType.Int32).Value = compId;
+                        cmdMerge.Parameters.Add("ob", OracleDbType.Decimal).Value = obValue;
+                        cmdMerge.Parameters.Add("key", OracleDbType.Varchar2).Value = Guid.NewGuid().ToString();
+                        cmdMerge.Parameters.Add("log", OracleDbType.Int32).Value = logId;
 
                         cmdMerge.ExecuteNonQuery();
                     }

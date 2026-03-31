@@ -223,13 +223,21 @@
                             <i class="fas fa-list-ol"></i>
                             <span>Chart of Accounts (Sub Ledger)</span>
                         </asp:LinkButton>
+                        <asp:LinkButton ID="btnReceivableSLType" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click">
+                            <i class="fas fa-receipt"></i>
+                            <span>Receiveable SL Type</span>
+                        </asp:LinkButton>
+                        <asp:LinkButton ID="btnPayableSLType" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>Payable SL Type</span>
+                        </asp:LinkButton>
                         
-                        <asp:LinkButton ID="btnBooksType" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click">
+                        <asp:LinkButton ID="btnBooksType" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click" Visible="false">
                             <i class="fas fa-book"></i>
                             <span>Books Type</span>
                         </asp:LinkButton>
                         
-                        <asp:LinkButton ID="btnCostCenter" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click">
+                        <asp:LinkButton ID="btnCostCenter" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click" Visible="false">
                             <i class="fas fa-bullseye"></i>
                             <span>Cost Center</span>
                         </asp:LinkButton>

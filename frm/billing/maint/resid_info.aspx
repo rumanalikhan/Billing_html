@@ -1,8 +1,8 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeFile="resid_info.aspx.cs" Inherits="resid_info" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="resid_info.aspx.cs" Inherits="resid_info" %>
 
 <!DOCTYPE html>
 <html lang="en">
-<head runat="server">
+<head id="Head1" runat="server">
     <meta charset="UTF-8" />
     <title>Residential Information</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -113,18 +113,85 @@
             font-size: 26px;
             border-radius: 4px;
             cursor: pointer;
+            margin-right: 10px;
         }
 
         .asp-button:hover {
             background: #444;
         }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* Loading indicator */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
+    
+    <script type="text/javascript">
+        // JavaScript to manually trigger postback on Enter key
+        function handleResIdEnter(event) {
+            if (event.keyCode === 13) { // Enter key
+                event.preventDefault();
+                __doPostBack('<%= txtResId.UniqueID %>', '');
+                return false;
+            }
+            return true;
+        }
+
+        // Show loading indicator
+        function showLoading() {
+            var btn = document.getElementById('<%= btnSave.ClientID %>');
+            if (btn) {
+                btn.disabled = true;
+                btn.value = 'Loading...';
+            }
+        }
+    </script>
 </head>
 
 <body>
-<%--<header>
-    Residential Information
-</header>--%>
 
 <form id="form1" runat="server">
     <div class="container">
@@ -143,20 +210,19 @@
         <!-- FORM PANEL -->
         <div class="form-panel">
             <h2>Residential Info</h2>
-
+            
             <div class="row">
                 <div class="col">
                     <label>Registration Number</label>
-                    <asp:TextBox ID="txtRegNo" runat="server" CssClass="asp-input" AutoPostBack="true" OnTextChanged="txtRegNo_TextChanged" onkeydown="return txtRegNo_KeyDown(event);" />
+                    <asp:TextBox ID="txtRegNo" runat="server" CssClass="asp-input" AutoPostBack="true" OnTextChanged="txtRegNo_TextChanged" />
                 </div>
                 <div class="col">
                     <label>Category</label>
-                    <asp:TextBox ID="txtCategory" runat="server" CssClass="asp-input" />
-<%--                    <asp:DropDownList ID="ddlClientCategory" runat="server" CssClass="asp-input">
-                        <asp:ListItem Text="-- Select --" />
-                        <asp:ListItem Text="Residential" />
-                        <asp:ListItem Text="Commercial" />
-                    </asp:DropDownList>--%>
+                    <asp:DropDownList ID="ddlCategory" runat="server" CssClass="asp-input"></asp:DropDownList>
+                </div>
+                <div class="col">
+                    <label>New Category</label>
+                    <asp:DropDownList ID="ddlNewCategory" runat="server" CssClass="asp-input"></asp:DropDownList>
                 </div>
                 <div class="col">
                     <label>Maintenance Charges</label>
@@ -164,11 +230,11 @@
                 </div>
                 <div class="col">
                     <label>Residential ID</label>
-                    <asp:TextBox ID="txtResId" runat="server" CssClass="asp-input" />
+                    <asp:TextBox ID="txtResId" runat="server" CssClass="asp-input" Enabled="false" AutoPostBack="true" OnTextChanged="txtResId_TextChanged" onkeypress="return handleResIdEnter(event)" />
                 </div>
                 <div class="col">
                     <label>Residential ID (Electric)</label>
-                    <asp:TextBox ID="txtResIdE" runat="server" CssClass="asp-input" />
+                    <asp:TextBox ID="txtResIdE" runat="server" CssClass="asp-input" Enabled="false" />
                 </div>
             </div>
 
@@ -193,29 +259,19 @@
             <div class="row">
                 <div class="col">
                     <label>Precinct</label>
-                    <asp:TextBox ID="txtPrcnt" runat="server" CssClass="asp-input" />
-<%--                    <asp:DropDownList ID="ddPrcnt" runat="server" CssClass="asp-input">
-                        <asp:ListItem Text="-- Select --" />
-                        <asp:ListItem Text="Residential" />
-                        <asp:ListItem Text="Commercial" />
-                    </asp:DropDownList>--%>
+                    <asp:DropDownList ID="ddlPrcnt" runat="server" CssClass="asp-input"></asp:DropDownList>
                 </div>
                 <div class="col">
                     <label>Block</label>
-                    <asp:TextBox ID="txtBlock" runat="server" CssClass="asp-input" />
-<%--                    <asp:DropDownList ID="ddBlock" runat="server" CssClass="asp-input">
-                        <asp:ListItem Text="-- Select --" />
-                        <asp:ListItem Text="Residential" />
-                        <asp:ListItem Text="Commercial" />
-                    </asp:DropDownList>--%>
+                    <asp:DropDownList ID="ddlBlock" runat="server" CssClass="asp-input"></asp:DropDownList>
+                </div>
+                <div class="col">
+                    <label>Street</label>
+                    <asp:TextBox ID="txtStreet" runat="server" CssClass="asp-input" />
                 </div>
             </div>
 
             <div class="row">
-<%--                <div class="col">
-                    <label>NTN No</label>
-                    <asp:TextBox ID="txtNTN" runat="server" CssClass="asp-input" />
-                </div>--%>
                 <div class="col">
                     <label>CNIC Number</label>
                     <asp:TextBox ID="txtCNIC" runat="server" CssClass="asp-input" />
@@ -228,33 +284,15 @@
                     <asp:TextBox ID="txtContact" runat="server" CssClass="asp-input" />
                 </div>
             </div>
-
-            <div class="row">
-                <div class="col">
-                    <label>Comments</label>
-                    <asp:TextBox ID="txtComments" runat="server" TextMode="MultiLine" />
-                </div>
-            </div>
-
             <div class="btn-row">
-                <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="asp-button" />
-<%--                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="asp-button" />--%>
+                <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="asp-button" OnClick="btnSave_Click" />
                 <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="asp-button" OnClick="btnCancel_Click" />
+                <asp:Button ID="btnEdit" runat="server" Text="Edit" CssClass="asp-button" OnClick="btnEdit_Click" />
             </div>
-
+            
+            <div id="statusMessage" runat="server" class="status-message"></div>
         </div>
     </div>
 </form>
 </body>
 </html>
-
-<script type="text/javascript">
-    function txtRegNo_KeyDown(e) {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            __doPostBack('<%= txtRegNo.UniqueID %>', '');
-            return false;
-        }
-        return true;
-    }
-</script>

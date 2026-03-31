@@ -28,7 +28,7 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
         // Clear session and redirect to login page
         Session.Clear();
         Session.Abandon();
-        Response.Redirect("~/login.aspx");
+        Response.Redirect("~/login/Login.aspx");
     }
 
     protected void back_btn_Click(object sender, EventArgs e)
@@ -58,8 +58,14 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
             case "btnSubLedger":
                 Response.Redirect("~/frm/gl/setup/coa_sub_ledger.aspx");
                 break;
-            case "btnBooksType":  
-                Response.Redirect("~/frm/books_type.aspx");
+            case "btnReceivableSLType":
+                Response.Redirect("~/frm/gl/setup/receivable_sl_type.aspx");
+                break;
+            case "btnPayableSLType":
+                Response.Redirect("~/frm/gl/setup/payable_sl_type.aspx");
+                break;
+            case "btnBooksType":
+                Response.Redirect("~/frm/gl/setup/books_type.aspx");
                 break;
             case "btnCostCenter": 
                 Response.Redirect("~/frm/cost_center.aspx");
