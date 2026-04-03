@@ -232,12 +232,12 @@
                             <span>Payable SL Type</span>
                         </asp:LinkButton>
                         
-                        <asp:LinkButton ID="btnBooksType" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click" Visible="false">
+                        <asp:LinkButton ID="btnBooksType" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click" Visible="true">
                             <i class="fas fa-book"></i>
                             <span>Books Type</span>
                         </asp:LinkButton>
                         
-                        <asp:LinkButton ID="btnCostCenter" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click" Visible="false">
+                        <asp:LinkButton ID="btnCostCenter" runat="server" CssClass="menu-item setup-item" OnClick="SetupMenuItem_Click" Visible="true">
                             <i class="fas fa-bullseye"></i>
                             <span>Cost Center</span>
                         </asp:LinkButton>

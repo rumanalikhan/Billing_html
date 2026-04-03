@@ -27,8 +27,8 @@ public static class LogHelper
             OracleCommand cmd = new OracleCommand(query, conn);
 
             cmd.Parameters.Add("userIp", OracleDbType.Varchar2, 15).Value = string.IsNullOrEmpty(userIp) ? "0.0.0.0" : userIp;
-            cmd.Parameters.Add("hostName", OracleDbType.Varchar2, 30).Value = string.IsNullOrEmpty(hostName) ? "UNKNOWN" : hostName;
-            cmd.Parameters.Add("wndoId", OracleDbType.Varchar2, 30).Value = string.IsNullOrEmpty(wndoId) ? userIp ?? "UNKNOWN" : wndoId;
+            cmd.Parameters.Add("hostName", OracleDbType.Varchar2, 30).Value = string.IsNullOrEmpty(hostName) ? userIp : hostName;
+            cmd.Parameters.Add("wndoId", OracleDbType.Varchar2, 30).Value = string.IsNullOrEmpty(wndoId) ? "UNKNOWN" : wndoId;
             cmd.Parameters.Add("compId", OracleDbType.Int32).Value = compId;
             cmd.Parameters.Add("loginId", OracleDbType.Varchar2, 30).Value = string.IsNullOrEmpty(loginId) ? "SYSTEM" : loginId;
 
@@ -43,24 +43,15 @@ public static class LogHelper
         }
     }
 
-    /// <summary>
-    /// Gets the current log ID from session - NEVER creates a new one
-    /// </summary>
     public static int GetCurrentLogId(HttpSessionState session, HttpRequest request)
     {
         if (session != null && session["CurrentLogId"] != null)
         {
             return Convert.ToInt32(session["CurrentLogId"]);
         }
-
-        // ⚠️ IMPORTANT: Return 0 instead of creating a SYSTEM entry
-        // This prevents duplicate log entries
         return 0;
     }
 
-    /// <summary>
-    /// Creates a new log entry for each transaction - use this for all saves
-    /// </summary>
     public static int CreateTransactionLog(HttpSessionState session, HttpRequest request)
     {
         string loginId = "SYSTEM";
@@ -75,14 +66,49 @@ public static class LogHelper
             compId = Convert.ToInt32(session["CurrentCompId"]);
         }
 
-        string userIp = GetIPv4Address(request);
-        string hostName = Environment.MachineName;
-        string systemIp = GetLocalIPAddress();
+        string clientIp = GetClientIPAddress(request);   
+        string clientHostName = GetClientHostName(clientIp); 
+        string serverIp = GetServerIPAddress();             
 
-        return CreateLogEntry(loginId, compId, userIp, hostName, systemIp);
+        return CreateLogEntry(loginId, compId, clientIp, clientHostName, serverIp);
     }
 
-    private static string GetIPv4Address(HttpRequest request)
+    private static string GetClientHostName(string clientIp)
+    {
+        // For localhost, return machine name
+        if (clientIp == "127.0.0.1")
+        {
+            return Environment.MachineName;
+        }
+
+        // For local network IPs, try to resolve PC name
+        if (clientIp.StartsWith("192.168.") || clientIp.StartsWith("10.") ||
+            clientIp.StartsWith("172.16.") || clientIp.StartsWith("172.17.") || clientIp.StartsWith("172.18.") ||
+            clientIp.StartsWith("172.19.") || clientIp.StartsWith("172.20.") || clientIp.StartsWith("172.21.") ||
+            clientIp.StartsWith("172.22.") || clientIp.StartsWith("172.23.") || clientIp.StartsWith("172.24.") ||
+            clientIp.StartsWith("172.25.") || clientIp.StartsWith("172.26.") || clientIp.StartsWith("172.27.") ||
+            clientIp.StartsWith("172.28.") || clientIp.StartsWith("172.29.") || clientIp.StartsWith("172.30.") ||
+            clientIp.StartsWith("172.31."))
+        {
+            try
+            {
+                IPHostEntry entry = Dns.GetHostEntry(clientIp);
+                if (entry != null && !string.IsNullOrEmpty(entry.HostName))
+                {
+                    string pcName = entry.HostName.Split('.')[0];
+                    if (!pcName.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return pcName;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        return clientIp;
+    }
+
+    private static string GetClientIPAddress(HttpRequest request)
     {
         if (request == null) return "0.0.0.0";
 
@@ -91,7 +117,7 @@ public static class LogHelper
         {
             string[] addresses = ipAddress.Split(',');
             if (addresses.Length > 0)
-                return addresses[0];
+                return addresses[0].Trim();
         }
 
         ipAddress = request.ServerVariables["REMOTE_ADDR"];
@@ -101,7 +127,7 @@ public static class LogHelper
         return ipAddress ?? "0.0.0.0";
     }
 
-    private static string GetLocalIPAddress()
+    private static string GetServerIPAddress()
     {
         try
         {

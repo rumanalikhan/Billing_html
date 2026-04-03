@@ -132,7 +132,7 @@
                 <div class="right-content">
 
                     <!-- LEVEL 1 -->
-                    <div class="card">
+                    <%--<div class="card">
                         <h1>Chart of Accounts</h1>
                         <h3>Level 1</h3>
                         <asp:RadioButtonList
@@ -198,7 +198,66 @@
                                 </asp:GridView>
                             </div>
                         </div>
+                    </div>--%>
+
+                    <div class="card">
+                        <h1>Chart of Accounts</h1>
                     </div>
+
+                    <div class="level-row">
+
+    <div class="level-block">
+        <div class="section-title">Level 1</div>
+        <div style="max-height:250px; overflow-y:auto;">
+            <asp:GridView ID="gvLevel1" runat="server"
+                CssClass="grid-style"
+                AutoGenerateColumns="false"
+                DataKeyNames="Code"
+                OnSelectedIndexChanged="gvLevel1_SelectedIndexChanged">
+                <Columns>
+                    <asp:BoundField DataField="Code" HeaderText="Code" />
+                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                    <asp:CommandField ShowSelectButton="true" />
+                </Columns>
+            </asp:GridView>
+        </div>
+    </div>
+
+    <div class="level-block">
+        <div class="section-title">Level 2</div>
+        <div style="max-height:250px; overflow-y:auto;">
+            <asp:GridView ID="gvLevel2" runat="server"
+                CssClass="grid-style"
+                AutoGenerateColumns="false"
+                DataKeyNames="Code"
+                OnSelectedIndexChanged="gvLevel2_SelectedIndexChanged">
+                <Columns>
+                    <asp:BoundField DataField="Code" HeaderText="Code" />
+                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                    <asp:CommandField ShowSelectButton="true" />
+                </Columns>
+            </asp:GridView>
+        </div>
+    </div>
+
+    <div class="level-block">
+        <div class="section-title">Level 3</div>
+        <div style="max-height:250px; overflow-y:auto;">
+            <asp:GridView ID="gvLevel3" runat="server"
+                CssClass="grid-style"
+                AutoGenerateColumns="false"
+                DataKeyNames="Code"
+                OnSelectedIndexChanged="gvLevel3_SelectedIndexChanged">
+                <Columns>
+                    <asp:BoundField DataField="Code" HeaderText="Code" />
+                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                    <asp:BoundField DataField="Opening_Balance" HeaderText="Opening Balance" />
+                    <asp:CommandField ShowSelectButton="true" />
+                </Columns>
+            </asp:GridView>
+        </div>
+    </div>
+</div>
 
                     <!-- UPDATE TRANSACTION -->
                     <div class="panel-header">Update Transaction</div>
@@ -262,35 +321,6 @@
             </div>
 
             <%-- CONFIRMATION POPUP SCRIPT --%>
-            <script>
-                window.onload = function () {
-                    var btn = document.getElementById('<%= btnSave.ClientID %>');
-
-                    btn.onclick = function (e) {
-
-                        e.preventDefault();   // STOP normal postback
-                        e.stopPropagation();  // EXTRA protection
-
-                        Swal.fire({
-                            title: 'Are you sure?',
-                            text: 'Do you want to save this record?',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: 'Yes, Save it!',
-                            cancelButtonText: 'Cancel'
-                        }).then(function (result) {
-
-                            if (result.isConfirmed) {
-                                // manually trigger postback
-                                __doPostBack('<%= btnSave.UniqueID %>', '');
-                            }
-                        });
-
-                        return false; // DOUBLE safety
-                    };
-                };
-            </script>
-
         </form>
     </body>
 </html>

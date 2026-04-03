@@ -12,14 +12,14 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
         if (!IsPostBack)
         {
             // Set user label text if user is logged in
-            if (Session["Username"] != null)
-            {
-                lblUser.Text = "Welcome, " + Session["Username"].ToString();
-            }
-            else
-            {
-                lblUser.Text = "Welcome, Guest";
-            }
+            //if (Session["Username"] != null)
+            //{
+            //    lblUser.Text = "Welcome, " + Session["Username"].ToString();
+            //}
+            //else
+            //{
+            //    lblUser.Text = "Welcome, Guest";
+            //}
         }
     }
 
@@ -67,8 +67,8 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
             case "btnBooksType":
                 Response.Redirect("~/frm/gl/setup/books_type.aspx");
                 break;
-            case "btnCostCenter": 
-                Response.Redirect("~/frm/cost_center.aspx");
+            case "btnCostCenter":
+                Response.Redirect("~/frm/gl/setup/cost_centre.aspx");
                 break;
             default:
                 ClientScript.RegisterStartupScript(this.GetType(), "alert",
@@ -119,7 +119,7 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
                 Response.Redirect("~/frm/gl/audit_trial.aspx");
                 break;
             case "btnJournalGeneral":
-                Response.Redirect("~/frm/gl/journal_general.aspx");
+                Response.Redirect("~/frm/gl/reports/general_ledger_report.aspx");
                 break;
             case "btnJournalGeneralSub":
                 Response.Redirect("~/frm/gl/journal_general_sub.aspx");

@@ -9,21 +9,20 @@ public partial class Login : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        // Clear any existing session on page load
         if (!IsPostBack)
         {
-            Session.Clear(); // Start fresh
+            Session.Clear();
         }
     }
 
-    private string GetIPv4Address()
+    private string GetClientIPAddress()
     {
         string ipAddress = Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
         if (!string.IsNullOrEmpty(ipAddress))
         {
             string[] addresses = ipAddress.Split(',');
             if (addresses.Length > 0)
-                return addresses[0];
+                return addresses[0].Trim();
         }
 
         ipAddress = Request.ServerVariables["REMOTE_ADDR"];
@@ -33,7 +32,7 @@ public partial class Login : System.Web.UI.Page
         return ipAddress;
     }
 
-    private string GetLocalIPAddress()
+    private string GetServerIPAddress()
     {
         try
         {
@@ -42,25 +41,48 @@ public partial class Login : System.Web.UI.Page
 
             foreach (IPAddress ip in hostEntry.AddressList)
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    if (!ip.ToString().StartsWith("169.254"))
-                        return ip.ToString();
-                }
-            }
-
-            foreach (IPAddress ip in hostEntry.AddressList)
-            {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                if (ip.AddressFamily == AddressFamily.InterNetwork && !ip.ToString().StartsWith("169.254"))
                     return ip.ToString();
             }
-
             return "127.0.0.1";
         }
         catch
         {
             return "127.0.0.1";
         }
+    }
+
+    private string GetClientHostName(string clientIp)
+    {
+        if (clientIp == "127.0.0.1")
+        {
+            return Environment.MachineName;
+        }
+
+        if (clientIp.StartsWith("192.168.") || clientIp.StartsWith("10.") ||
+            clientIp.StartsWith("172.16.") || clientIp.StartsWith("172.17.") || clientIp.StartsWith("172.18.") ||
+            clientIp.StartsWith("172.19.") || clientIp.StartsWith("172.20.") || clientIp.StartsWith("172.21.") ||
+            clientIp.StartsWith("172.22.") || clientIp.StartsWith("172.23.") || clientIp.StartsWith("172.24.") ||
+            clientIp.StartsWith("172.25.") || clientIp.StartsWith("172.26.") || clientIp.StartsWith("172.27.") ||
+            clientIp.StartsWith("172.28.") || clientIp.StartsWith("172.29.") || clientIp.StartsWith("172.30.") ||
+            clientIp.StartsWith("172.31."))
+        {
+            try
+            {
+                IPHostEntry entry = Dns.GetHostEntry(clientIp);
+                if (entry != null && !string.IsNullOrEmpty(entry.HostName))
+                {
+                    string pcName = entry.HostName.Split('.')[0];
+                    if (!pcName.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return pcName;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        return clientIp;
     }
 
     protected void btnSubmit_Click(object sender, EventArgs e)
@@ -115,22 +137,24 @@ public partial class Login : System.Web.UI.Page
                     {
                         if (dr.Read())
                         {
-                            string userIp = GetIPv4Address();
-                            string systemIp = GetLocalIPAddress();
+                            // CORRECT MAPPING:
+                            string clientIp = GetClientIPAddress();      // 172.16.10.63 (USER's network IP)
+                            string serverIp = GetServerIPAddress();      // 172.16.40.56 (SERVER's IP)
+                            string clientHostName = GetClientHostName(clientIp); 
 
                             Session["login_id"] = dr["ID"].ToString();
                             Session["login_name"] = dr["USER_NAME"].ToString();
                             Session["system_date"] = DateTime.Now;
-                            Session["system_ip"] = userIp;
+                            Session["system_ip"] = clientIp;
                             Session["User"] = username;
 
-                            // Create ONE log entry for login
+                            // Insert with CORRECT column mapping
                             int logId = LogHelper.CreateLogEntry(
                                 dr["ID"].ToString(),
                                 1,
-                                userIp,
-                                Environment.MachineName,
-                                systemIp
+                                clientIp,        // USER_IP = Client network IP 
+                                clientHostName,  // HOST_NAME = Client PC 
+                                serverIp         // WNDO_ID = Server IP 
                             );
 
                             Session["CurrentLogId"] = logId;
