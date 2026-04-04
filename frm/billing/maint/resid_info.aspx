@@ -65,7 +65,35 @@
         .form-panel h2 {
             font-size: 45px;
             font-weight: 600;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* Mode Indicator Styles */
+        .mode-indicator-container {
+            text-align: right;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .mode-indicator {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mode-insert {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .mode-edit {
+            background-color: #ffc107;
+            color: #333;
         }
 
         .row {
@@ -151,44 +179,12 @@
             border: 1px solid #bee5eb;
         }
         
-        /* Loading indicator */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Disabled field style */
+        input:disabled, select:disabled, textarea:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
         }
     </style>
-    
-    <script type="text/javascript">
-        // JavaScript to manually trigger postback on Enter key
-        function handleResIdEnter(event) {
-            if (event.keyCode === 13) { // Enter key
-                event.preventDefault();
-                __doPostBack('<%= txtResId.UniqueID %>', '');
-                return false;
-            }
-            return true;
-        }
-
-        // Show loading indicator
-        function showLoading() {
-            var btn = document.getElementById('<%= btnSave.ClientID %>');
-            if (btn) {
-                btn.disabled = true;
-                btn.value = 'Loading...';
-            }
-        }
-    </script>
 </head>
 
 <body>
@@ -211,6 +207,11 @@
         <div class="form-panel">
             <h2>Residential Info</h2>
             
+            <!-- Mode Indicator -->
+            <div class="mode-indicator-container">
+                <asp:Label ID="lblMode" runat="server" CssClass="mode-indicator mode-insert" Text="INSERT MODE"></asp:Label>
+            </div>
+            
             <div class="row">
                 <div class="col">
                     <label>Registration Number</label>
@@ -230,7 +231,7 @@
                 </div>
                 <div class="col">
                     <label>Residential ID</label>
-                    <asp:TextBox ID="txtResId" runat="server" CssClass="asp-input" Enabled="false" AutoPostBack="true" OnTextChanged="txtResId_TextChanged" onkeypress="return handleResIdEnter(event)" />
+                    <asp:TextBox ID="txtResId" runat="server" CssClass="asp-input" Enabled="false" AutoPostBack="true" OnTextChanged="txtResId_TextChanged" />
                 </div>
                 <div class="col">
                     <label>Residential ID (Electric)</label>
@@ -284,6 +285,14 @@
                     <asp:TextBox ID="txtContact" runat="server" CssClass="asp-input" />
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>Remarks</label>
+                    <asp:TextBox ID="txtRemarks" runat="server" TextMode="MultiLine" Rows="3" CssClass="asp-input" />
+                </div>
+            </div>
+            
             <div class="btn-row">
                 <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="asp-button" OnClick="btnSave_Click" />
                 <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="asp-button" OnClick="btnCancel_Click" />

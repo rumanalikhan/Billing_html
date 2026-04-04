@@ -32,6 +32,12 @@ public partial class general_ledger_report : System.Web.UI.Page
         LoadReport();
     }
 
+    protected void btnBack_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("~/main_menu/main_menu_gl.aspx", false);
+    }
+
+
     private void LoadReport()
     {
         try

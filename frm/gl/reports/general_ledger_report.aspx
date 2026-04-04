@@ -14,21 +14,60 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f4f6f8;
-            padding: 0;
+            padding: 20px;
             margin: 0;
             min-height: 100vh;
         }
 
+        /* Header container - flexbox for same row like Chart of Accounts */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: black;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .print-btn, .back-btn {
+            background-color: black;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .print-btn:hover, .back-btn:hover {
+            background-color: #333;
+            transform: translateY(-1px);
+        }
+
         .report-container {
             width: 100%;
-            min-height: 100vh;
             background: white;
             padding: 20px;
+            border-radius: 8px;
         }
 
         .company-header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 12px;
         }
 
         .company-name {
@@ -41,14 +80,6 @@
             font-size: 12px;
             color: #555;
             margin-top: 5px;
-        }
-
-        .report-title {
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            margin: 15px 0 10px;
-            text-decoration: underline;
         }
 
         .report-period {
@@ -79,17 +110,17 @@
             gap: 8px;
         }
 
-            .filter-group label {
-                font-weight: 600;
-                font-size: 12px;
-            }
+        .filter-group label {
+            font-weight: 600;
+            font-size: 12px;
+        }
 
-            .filter-group input {
-                padding: 6px 10px;
-                border: 1px solid #ced4da;
-                border-radius: 4px;
-                font-size: 12px;
-            }
+        .filter-group input {
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 12px;
+        }
 
         .button-container {
             margin-left: auto;
@@ -97,7 +128,7 @@
             gap: 10px;
         }
 
-        .btn-search, .btn-print {
+        .btn-search {
             padding: 6px 20px;
             cursor: pointer;
             border: none;
@@ -105,27 +136,13 @@
             font-weight: bold;
             font-size: 12px;
             transition: all 0.2s ease-in-out;
-        }
-
-        .btn-search {
             background: #0f7c57;
             color: white;
         }
 
-            .btn-search:hover {
-                background: #0a5e42;
-            }
-
-        .btn-print {
-            background: white;
-            color: #2c3e50;
-            border: 1px solid #2c3e50;
+        .btn-search:hover {
+            background: #0a5e42;
         }
-
-            .btn-print:hover {
-                background: #2c3e50;
-                color: white;
-            }
 
         .table-wrapper {
             overflow-x: auto;
@@ -142,20 +159,13 @@
             min-width: 1100px;
         }
 
-        .total-row td {
-            border-top: 2px solid #0f7c57;
-            border-bottom: 2px solid #0f7c57;
-            background: #dcdcdc;
-        }
-
-
-
         .report-table th {
-            background: #d9d9d9;
-            border: 1px solid #bfbfbf;
+            background: #0f7c57;
+            color: white;
+            border: 1px solid #0a5e42;
             padding: 10px 6px;
             text-align: left;
-            font-weight: 600;
+            font-weight: bold;
             font-size: 11px;
         }
 
@@ -165,65 +175,38 @@
             vertical-align: top;
         }
 
+        .report-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
         .report-table tr:hover {
             background: #f2f2f2;
         }
 
         /* Fixed column widths */
-        .report-table th:nth-child(1) {
-            width: 8%;
-        }
-        /* GL CODE */
-        .report-table th:nth-child(2) {
-            width: 12%;
-        }
-        /* GL DESCRIPTION */
-        .report-table th:nth-child(3) {
-            width: 8%;
-        }
-        /* BOOK TYPE */
-        .report-table th:nth-child(4) {
-            width: 5%;
-        }
-        /* GL FORM */
-        .report-table th:nth-child(5) {
-            width: 5%;
-        }
-        /* VOUCHER DATE */
-        .report-table th:nth-child(6) {
-            width: 16%;
-        }
-        /* NARATION */
-        .report-table th:nth-child(7) {
-            width: 10%;
-        }
-        /* CHEQUE NO */
-        .report-table th:nth-child(8) {
-            width: 5%;
-        }
-        /* BILL NO */
-        .report-table th:nth-child(9) {
-            width: 5%;
-        }
-        /* OPENING */
-        .report-table th:nth-child(10) {
-            width: 8%;
-        }
-        /* DEBIT */
-        .report-table th:nth-child(11) {
-            width: 8%;
-        }
-        /* CREDIT */
-        .report-table th:nth-child(12) {
-            width: 8%;
-        }
-        /* RUNNING BALANCE */
+        .report-table th:nth-child(1) { width: 8%; }
+        .report-table th:nth-child(2) { width: 12%; }
+        .report-table th:nth-child(3) { width: 8%; }
+        .report-table th:nth-child(4) { width: 5%; }
+        .report-table th:nth-child(5) { width: 5%; }
+        .report-table th:nth-child(6) { width: 16%; }
+        .report-table th:nth-child(7) { width: 10%; }
+        .report-table th:nth-child(8) { width: 5%; }
+        .report-table th:nth-child(9) { width: 5%; }
+        .report-table th:nth-child(10) { width: 8%; }
+        .report-table th:nth-child(11) { width: 8%; }
+        .report-table th:nth-child(12) { width: 8%; }
 
         .total-row {
             background: #dcdcdc !important;
             font-weight: bold;
         }
 
+        .total-row td {
+            border-top: 2px solid #0f7c57;
+            border-bottom: 2px solid #0f7c57;
+            background: #dcdcdc;
+        }
 
         .text-right {
             text-align: right !important;
@@ -240,62 +223,75 @@
         }
 
         @media print {
-    body {
-        background: white;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .filter-section, .no-print {
-        display: none !important;
-    }
-    
-    .report-container {
-        padding: 5px;
-        width: 100%;
-    }
-    
-    .table-wrapper {
-        overflow: visible !important;
-        border: none;
-        width: 100%;
-    }
-    
-    .report-table {
-        width: 100%;
-        table-layout: auto;
-        font-size: 9px;
-    }
-    
-    .report-table th, 
-    .report-table td {
-        border: 1px solid #000 !important;
-        padding: 4px;
-    }
-    
-    .report-table th {
-        background: #d9d9d9 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    .total-row td {
-        background: #dcdcdc !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-}
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .header-container {
+                display: none !important;
+            }
+
+            .report-container {
+                padding: 5px;
+                width: 100%;
+            }
+
+            .table-wrapper {
+                overflow: visible !important;
+                border: none;
+                width: 100%;
+            }
+
+            .report-table {
+                width: 100%;
+                table-layout: auto;
+                font-size: 9px;
+            }
+
+            .report-table th,
+            .report-table td {
+                border: 1px solid #000 !important;
+                padding: 4px;
+            }
+
+            .report-table th {
+                background: #0f7c57 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .total-row td {
+                background: #dcdcdc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body>
     <form id="form1" runat="server">
+        <!-- Header like Chart of Accounts -->
+        <div class="no-print">
+            <div class="header-container">
+                <h1>General Ledger Report</h1>
+                <div class="button-group">
+                    <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print Report" CssClass="print-btn" OnClientClick="window.print();return false;" />
+                    <asp:Button ID="btnBack" runat="server" Text="< Go Back" CssClass="back-btn" OnClick="btnBack_Click" />
+                </div>
+            </div>
+        </div>
+
         <div class="report-container">
             <div class="company-header">
                 <div class="company-name">BAHRIA TOWN KARACHI</div>
                 <div class="company-sub">GL ACCOUNTING SYSTEM</div>
             </div>
-
-            <div class="report-title">GENERAL LEDGER REPORT</div>
 
             <div class="filter-section no-print">
                 <div class="filter-group">
@@ -316,15 +312,12 @@
                 </div>
                 <div class="button-container">
                     <asp:Button ID="btnSearch" runat="server" Text="Search" OnClick="btnSearch_Click" CssClass="btn-search" />
-                    <asp:Button ID="btnPrint" runat="server" Text="Print" OnClientClick="window.print();return false;" CssClass="btn-print" />
                 </div>
             </div>
 
             <div class="report-period">
-                FROM:
-                <asp:Label ID="lblFromDate" runat="server" />
-                TO:
-                <asp:Label ID="lblToDate" runat="server" />
+                FROM: <asp:Label ID="lblFromDate" runat="server" />
+                TO: <asp:Label ID="lblToDate" runat="server" />
                 <asp:Label ID="lblAccountRange" runat="server" />
             </div>
 
@@ -332,7 +325,7 @@
                 <asp:GridView ID="gvReport" runat="server" AutoGenerateColumns="false" CssClass="report-table"
                     OnRowDataBound="gvReport_RowDataBound" ShowHeader="true" GridLines="None">
                     <Columns>
-                        <asp:BoundField DataField="GL_CODE" HeaderText="GL CODE" ItemStyle-CssClass="text-right" HeaderStyle-CssClass="text-left" />
+                        <asp:BoundField DataField="GL_CODE" HeaderText="GL CODE" />
                         <asp:BoundField DataField="GL_DESCRP" HeaderText="GL DESCRIPTION" />
                         <asp:BoundField DataField="BOOK_TYPE" HeaderText="BOOK TYPE" />
                         <asp:BoundField DataField="GL_FORM_NUMBER" HeaderText="GL FORM" />
@@ -340,10 +333,10 @@
                         <asp:BoundField DataField="NARATION" HeaderText="NARATION" />
                         <asp:BoundField DataField="CHEQUE_NUMBER" HeaderText="CHEQUE NO" />
                         <asp:BoundField DataField="BILL_NUMBER" HeaderText="BILL NO" />
-                        <asp:BoundField DataField="OPENING_BALANCE" HeaderText="OPENING" ItemStyle-CssClass="text-right" />
-                        <asp:BoundField DataField="DEBIT" HeaderText="DEBIT" ItemStyle-CssClass="text-right" />
-                        <asp:BoundField DataField="CREDIT" HeaderText="CREDIT" ItemStyle-CssClass="text-right" />
-                        <asp:TemplateField HeaderText="RUNNING BALANCE" ItemStyle-CssClass="text-right">
+                        <asp:BoundField DataField="OPENING_BALANCE" HeaderText="OPENING" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="DEBIT" HeaderText="DEBIT" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="CREDIT" HeaderText="CREDIT" ItemStyle-HorizontalAlign="Right" />
+                        <asp:TemplateField HeaderText="RUNNING BALANCE" ItemStyle-HorizontalAlign="Right">
                             <ItemTemplate>
                                 <asp:Label ID="lblRunningBalance" runat="server" />
                             </ItemTemplate>
