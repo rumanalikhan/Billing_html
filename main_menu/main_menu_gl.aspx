@@ -274,6 +274,12 @@
                             <i class="fas fa-file-invoice-dollar"></i>
                             <span>Journal Voucher</span>
                         </asp:LinkButton>
+
+                        <asp:LinkButton ID="btnVoucherStatus" runat="server" CssClass="menu-item transaction-item" OnClick="TransactionMenuItem_Click">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Voucher Status</span>
+                        </asp:LinkButton>
+                       
                     </div>
                 </div>
                 
@@ -283,14 +289,19 @@
                         <i class="fas fa-chart-bar"></i> Reporting
                     </div>
                     <div class="menu-items">
-                        <asp:LinkButton ID="btnAuditTrial" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">
-                            <i class="fas fa-search-dollar"></i>
-                            <span>Audit Trial</span>
+                         <asp:LinkButton ID="btnViewVoucher" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Voucher Report</span>
                         </asp:LinkButton>
                         
                         <asp:LinkButton ID="btnJournalGeneral" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">
                             <i class="fas fa-book"></i>
                             <span>Journal General</span>
+                        </asp:LinkButton>
+                        
+                        <asp:LinkButton ID="btnAuditTrial" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">
+                            <i class="fas fa-search-dollar"></i>
+                            <span>Audit Trial</span>
                         </asp:LinkButton>
                         
                         <asp:LinkButton ID="btnJournalGeneralSub" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">

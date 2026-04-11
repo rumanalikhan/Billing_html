@@ -10,6 +10,9 @@ public partial class resid_info : System.Web.UI.Page
     string connStr = WebConfigurationManager
                         .ConnectionStrings["MyDbConnectionMNT"]
                         .ConnectionString;
+    string connMain = WebConfigurationManager
+                        .ConnectionStrings["MyDbConnection"]
+                        .ConnectionString;
 
     protected void Page_Load(object sender, EventArgs e)
     {
@@ -21,20 +24,33 @@ public partial class resid_info : System.Web.UI.Page
             pcdBlock();
             pcdInit();
 
-            // Disable RES_ID field initially
-            txtResId.Enabled = false;
-            txtRegNo.Enabled = true;
         }
 
         if (ViewState["mEdit"] != null)
         {
             mEdit = (int)ViewState["mEdit"];
         }
+
+        ShowModeIndicator();
     }
 
     protected void Page_PreRender(object sender, EventArgs e)
     {
         ViewState["mEdit"] = mEdit;
+    }
+
+    protected void ShowModeIndicator()
+    {
+        if (mEdit == 1)
+        {
+            lblMode.Text = "EDIT MODE";
+            lblMode.Attributes["class"] = "mode-indicator mode-edit";
+        }
+        else
+        {
+            lblMode.Text = "INSERT MODE";
+            lblMode.Attributes["class"] = "mode-indicator mode-insert";
+        }
     }
 
     protected void pcdInit()
@@ -79,8 +95,8 @@ public partial class resid_info : System.Web.UI.Page
 
         txtRegNo.Focus();
         txtRegNo.Enabled = true;
-        txtResId.Enabled = false;
         txtResId.Text = "";
+        txtResIdE.Text = "";
 
         // Enable all input fields for insert mode
         txtResName.Enabled = true;
@@ -90,50 +106,15 @@ public partial class resid_info : System.Web.UI.Page
         txtContact.Enabled = true;
         txtStreet.Enabled = true;
         txtMaintCharges.Enabled = true;
+        txtRemarks.Enabled = true;
         ddlCategory.Enabled = true;
         ddlNewCategory.Enabled = true;
         ddlPrcnt.Enabled = true;
         ddlBlock.Enabled = true;
+
+        ShowModeIndicator();
     }
 
-    protected void pcdClearForm()
-    {
-        txtRegNo.Text = "";
-        txtResId.Text = "";
-        txtResIdE.Text = "";
-        txtResName.Text = "";
-        txtFatherName.Text = "";
-        txtMaintCharges.Text = "";
-        txtAddress.Text = "";
-        txtCNIC.Text = "";
-        txtContact.Text = "";
-        txtStreet.Text = "";
-        txtRemarks.Text = "";
-
-        ddlCategory.ClearSelection();
-        if (ddlCategory.Items.Count > 0)
-        {
-            ddlCategory.Items[0].Selected = true;
-        }
-
-        ddlPrcnt.ClearSelection();
-        if (ddlPrcnt.Items.Count > 0)
-        {
-            ddlPrcnt.Items[0].Selected = true;
-        }
-
-        ddlBlock.ClearSelection();
-        if (ddlBlock.Items.Count > 0)
-        {
-            ddlBlock.Items[0].Selected = true;
-        }
-
-        ddlNewCategory.ClearSelection();
-        if (ddlNewCategory.Items.Count > 0)
-        {
-            ddlNewCategory.Items[0].Selected = true;
-        }
-    }
 
     protected void pcdCategory()
     {
@@ -219,9 +200,22 @@ public partial class resid_info : System.Web.UI.Page
         mEdit = 1;
         txtResId.Text = "";
         txtResId.Enabled = true;
-//        txtRegNo.Enabled = false;
-        pcdClearForm();
+        txtResIdE.Enabled = true;
+        txtRegNo.Enabled = true;
+        txtRegNo.Text = "";
+        txtResId.Text = "";
+        txtResIdE.Text = "";
+        txtResName.Text = "";
+        txtFatherName.Text = "";
+        txtMaintCharges.Text = "";
+        txtAddress.Text = "";
+        txtCNIC.Text = "";
+        txtContact.Text = "";
+        txtStreet.Text = "";
+        txtRemarks.Text = "";
         txtResId.Focus();
+        ShowModeIndicator();
+        ShowStatusMessage("Enter Residential ID and press Tab to load record", "info");
     }
 
     protected void btnCancel_Click(object sender, EventArgs e)
@@ -240,7 +234,7 @@ public partial class resid_info : System.Web.UI.Page
             return;
         }
 
-        if (mEdit == 0)
+        if (mEdit == 0)  // INSERT MODE - Get data from V_FILES
         {
             try
             {
@@ -261,79 +255,33 @@ public partial class resid_info : System.Web.UI.Page
                         {
                             if (reader.Read())
                             {
-                                txtResName.Text = reader["OWNER_NAME"] != DBNull.Value
-                                                  ? reader["OWNER_NAME"].ToString()
-                                                  : "";
-
-                                txtAddress.Text = reader["OWNER_ADDRESS"] != DBNull.Value
-                                                  ? reader["OWNER_ADDRESS"].ToString()
-                                                  : "";
-
-                                txtCNIC.Text = reader["OWNER_CNIC"] != DBNull.Value
-                                                  ? reader["OWNER_CNIC"].ToString()
-                                                  : "";
-
-                                txtContact.Text = reader["OWNER_MOBILE"] != DBNull.Value
-                                                  ? reader["OWNER_MOBILE"].ToString()
-                                                  : "";
+                                txtResName.Text = reader["OWNER_NAME"] != DBNull.Value ? reader["OWNER_NAME"].ToString() : "";
+                                txtAddress.Text = reader["OWNER_ADDRESS"] != DBNull.Value ? reader["OWNER_ADDRESS"].ToString() : "";
+                                txtCNIC.Text = reader["OWNER_CNIC"] != DBNull.Value ? reader["OWNER_CNIC"].ToString() : "";
+                                txtContact.Text = reader["OWNER_MOBILE"] != DBNull.Value ? reader["OWNER_MOBILE"].ToString() : "";
 
                                 ddlCategory.ClearSelection();
                                 ListItem item = ddlCategory.Items.FindByText(reader["CATEGORY_NAME"].ToString());
-                                if (item != null)
-                                {
-                                    item.Selected = true;
-                                }
-                                else if (ddlCategory.Items.Count > 0)
-                                {
-                                    ddlCategory.Items[0].Selected = true;
-                                }
+                                if (item != null) item.Selected = true;
+                                else if (ddlCategory.Items.Count > 0) ddlCategory.Items[0].Selected = true;
 
                                 ddlPrcnt.ClearSelection();
                                 ListItem prcnt = ddlPrcnt.Items.FindByText(reader["PRECINCT_NAME"].ToString());
-                                if (prcnt != null)
-                                {
-                                    prcnt.Selected = true;
-                                }
-                                else if (ddlPrcnt.Items.Count > 0)
-                                {
-                                    ddlPrcnt.Items[0].Selected = true;
-                                }
+                                if (prcnt != null) prcnt.Selected = true;
+                                else if (ddlPrcnt.Items.Count > 0) ddlPrcnt.Items[0].Selected = true;
 
                                 ddlBlock.ClearSelection();
                                 ListItem block = ddlBlock.Items.FindByText(reader["BLOCK_NAME"].ToString());
-                                if (block != null)
-                                {
-                                    block.Selected = true;
-                                }
-                                else if (ddlBlock.Items.Count > 0)
-                                {
-                                    ddlBlock.Items[0].Selected = true;
-                                }
+                                if (block != null) block.Selected = true;
+                                else if (ddlBlock.Items.Count > 0) ddlBlock.Items[0].Selected = true;
 
                                 pcdBarcodeExists();
+                                //LoadElectricId(txtResId.Text);
                                 txtMaintCharges.Focus();
                             }
                             else
                             {
-                                txtResName.Text = "";
-                                txtAddress.Text = "";
-                                txtCNIC.Text = "";
-                                txtContact.Text = "";
-
-                                ddlCategory.ClearSelection();
-                                if (ddlCategory.Items.Count > 0) ddlCategory.Items[0].Selected = true;
-
-                                ddlNewCategory.ClearSelection();
-                                if (ddlNewCategory.Items.Count > 0) ddlNewCategory.Items[0].Selected = true;
-
-                                ddlPrcnt.ClearSelection();
-                                if (ddlPrcnt.Items.Count > 0) ddlPrcnt.Items[0].Selected = true;
-
-                                ddlBlock.ClearSelection();
-                                if (ddlBlock.Items.Count > 0) ddlBlock.Items[0].Selected = true;
-
-                                txtResId.Focus();
-                                ShowStatusMessage("Registration Number not found", "error");
+                                ShowStatusMessage("Registration Number not found in V_FILES", "error");
                             }
                         }
                     }
@@ -341,152 +289,119 @@ public partial class resid_info : System.Web.UI.Page
             }
             catch (Exception ex)
             {
-                txtResName.Text = "Error: " + ex.Message;
                 ShowStatusMessage("Error: " + ex.Message, "error");
             }
         }
-        else
+        else  // EDIT MODE - Get data from existing records using barcode
         {
-            try
+            LoadRecordByBarcode(regNo);
+        }
+    }
+
+    protected void LoadRecordByBarcode(string barcode)
+    {
+        try
+        {
+            using (OracleConnection con = new OracleConnection(connStr))
             {
-                using (OracleConnection con = new OracleConnection(connStr))
+                con.Open();
+
+                string sql = @"
+                    SELECT 
+                      B.RES_ID, 
+                      R.RES_NAME, R.HOUSE_NO, R.CNIC_NO, R.CONTACT_NO, R.MAINT_CHARGES, R.STREET_ID, R.REMARKS, 
+                      (SELECT BILCAT FROM BIL_CAT C WHERE C.CATID=R.RCAT_ID) BILCAT, 
+                      (SELECT MAX(C.CAT_NM) FROM RES_CAT_MAINT_NEW C WHERE C.CAT_ID=R.NCAT_ID) CAT_NM,
+                      (SELECT PRECENT_NM FROM PRECENT_MST P WHERE P.PRECENT_ID=R.PRECENT_ID) PRECENT_NM,
+                      (SELECT BLOCK_NM FROM BLOCK_MST P WHERE P.BLOCK_ID=R.BLOCK_ID) BLOCK_NM
+                    FROM RESIDENTIAL_BARCODE B, RESIDENTIAL_INFO R 
+                    WHERE B.RES_ID = R.RES_ID AND BARCODE = :p_regno
+                ";
+
+                using (OracleCommand cmd = new OracleCommand(sql, con))
                 {
-                    con.Open();
+                    cmd.Parameters.Add(new OracleParameter("p_regno", barcode));
 
-                    string sql = @"
-                        SELECT 
-                          B.RES_ID, 
-                          (SELECT E.RES_ID FROM BILLS.RESID_INFO E WHERE E.RES_ID=B.RES_ID) RES_IDE,
-                          R.RES_NAME, R.HOUSE_NO, R.CNIC_NO, R.CONTACT_NO, R.MAINT_CHARGES, R.STREET_ID, R.REMARKS, 
-                         (SELECT BILCAT FROM BIL_CAT C WHERE C.CATID=R.RCAT_ID) BILCAT, 
-                         (SELECT MAX(C.CAT_NM) FROM RES_CAT_MAINT_NEW C WHERE C.CAT_ID=R.NCAT_ID) CAT_NM,
-                         (SELECT PRECENT_NM FROM PRECENT_MST P WHERE P.PRECENT_ID=R.PRECENT_ID) PRECENT_NM,
-                         (SELECT BLOCK_NM FROM BLOCK_MST P WHERE P.BLOCK_ID=R.BLOCK_ID) BLOCK_NM
-                        FROM RESIDENTIAL_BARCODE B, RESIDENTIAL_INFO R WHERE B.RES_ID=R.RES_ID AND BARCODE=:p_regno
-                    ";
-
-                    using (OracleCommand cmd = new OracleCommand(sql, con))
+                    using (OracleDataReader reader = cmd.ExecuteReader())
                     {
-                        cmd.Parameters.Add(new OracleParameter("p_regno", regNo));
-
-                        using (OracleDataReader reader = cmd.ExecuteReader())
+                        if (reader.Read())
                         {
-                            if (reader.Read())
-                            {
-                                txtResId.Text = reader["RES_ID"] != DBNull.Value
-                                                  ? reader["RES_ID"].ToString()
-                                                  : "";
+                            txtResId.Text = reader["RES_ID"] != DBNull.Value ? reader["RES_ID"].ToString() : "";
+                            txtResName.Text = reader["RES_NAME"] != DBNull.Value ? reader["RES_NAME"].ToString() : "";
+                            txtAddress.Text = reader["HOUSE_NO"] != DBNull.Value ? reader["HOUSE_NO"].ToString() : "";
+                            txtCNIC.Text = reader["CNIC_NO"] != DBNull.Value ? reader["CNIC_NO"].ToString() : "";
+                            txtContact.Text = reader["CONTACT_NO"] != DBNull.Value ? reader["CONTACT_NO"].ToString() : "";
+                            txtMaintCharges.Text = reader["MAINT_CHARGES"] != DBNull.Value ? reader["MAINT_CHARGES"].ToString() : "";
+                            txtStreet.Text = reader["STREET_ID"] != DBNull.Value ? reader["STREET_ID"].ToString() : "";
+                            txtRemarks.Text = reader["REMARKS"] != DBNull.Value ? reader["REMARKS"].ToString() : "";
 
-                                txtResIdE.Text = reader["RES_IDE"] != DBNull.Value
-                                                  ? reader["RES_IDE"].ToString()
-                                                  : "";
+                            ddlCategory.ClearSelection();
+                            ListItem item = ddlCategory.Items.FindByText(reader["BILCAT"].ToString());
+                            if (item != null) item.Selected = true;
+                            else if (ddlCategory.Items.Count > 0) ddlCategory.Items[0].Selected = true;
 
-                                txtResName.Text = reader["RES_NAME"] != DBNull.Value
-                                                  ? reader["RES_NAME"].ToString()
-                                                  : "";
+                            ddlNewCategory.ClearSelection();
+                            ListItem itemN = ddlNewCategory.Items.FindByText(reader["CAT_NM"].ToString());
+                            if (itemN != null) itemN.Selected = true;
+                            else if (ddlNewCategory.Items.Count > 0) ddlNewCategory.Items[0].Selected = true;
 
-                                txtAddress.Text = reader["HOUSE_NO"] != DBNull.Value
-                                                  ? reader["HOUSE_NO"].ToString()
-                                                  : "";
+                            ddlPrcnt.ClearSelection();
+                            ListItem prcnt = ddlPrcnt.Items.FindByText(reader["PRECENT_NM"].ToString());
+                            if (prcnt != null) prcnt.Selected = true;
+                            else if (ddlPrcnt.Items.Count > 0) ddlPrcnt.Items[0].Selected = true;
 
-                                txtCNIC.Text = reader["CNIC_NO"] != DBNull.Value
-                                                  ? reader["CNIC_NO"].ToString()
-                                                  : "";
+                            ddlBlock.ClearSelection();
+                            ListItem block = ddlBlock.Items.FindByText(reader["BLOCK_NM"].ToString());
+                            if (block != null) block.Selected = true;
+                            else if (ddlBlock.Items.Count > 0) ddlBlock.Items[0].Selected = true;
 
-                                txtContact.Text = reader["CONTACT_NO"] != DBNull.Value
-                                                  ? reader["CONTACT_NO"].ToString()
-                                                  : "";
+                            // Load Electric ID
+                            LoadElectricId(txtResId.Text);
 
-                                txtMaintCharges.Text = reader["MAINT_CHARGES"] != DBNull.Value
-                                                  ? reader["MAINT_CHARGES"].ToString()
-                                                  : "";
-
-                                txtStreet.Text = reader["STREET_ID"] != DBNull.Value
-                                                  ? reader["STREET_ID"].ToString()
-                                                  : "";
-
-                                txtRemarks.Text = reader["REMARKS"] != DBNull.Value
-                                                  ? reader["REMARKS"].ToString()
-                                                  : "";
-
-                                ddlCategory.ClearSelection();
-                                ListItem item = ddlCategory.Items.FindByText(reader["BILCAT"].ToString());
-                                if (item != null)
-                                {
-                                    item.Selected = true;
-                                }
-                                else if (ddlCategory.Items.Count > 0)
-                                {
-                                    ddlCategory.Items[0].Selected = true;
-                                }
-
-                                // ALLAH
-                                ddlNewCategory.ClearSelection();
-                                ListItem itemN = ddlNewCategory.Items.FindByText(reader["CAT_NM"].ToString());
-                                if (itemN != null)
-                                {
-                                    itemN.Selected = true;
-                                }
-                                else if (ddlNewCategory.Items.Count > 0)
-                                {
-                                    ddlNewCategory.Items[0].Selected = true;
-                                }
-
-                                ddlPrcnt.ClearSelection();
-                                ListItem prcnt = ddlPrcnt.Items.FindByText(reader["PRECENT_NM"].ToString());
-                                if (prcnt != null)
-                                {
-                                    prcnt.Selected = true;
-                                }
-                                else if (ddlPrcnt.Items.Count > 0)
-                                {
-                                    ddlPrcnt.Items[0].Selected = true;
-                                }
-
-                                ddlBlock.ClearSelection();
-                                ListItem block = ddlBlock.Items.FindByText(reader["BLOCK_NM"].ToString());
-                                if (block != null)
-                                {
-                                    block.Selected = true;
-                                }
-                                else if (ddlBlock.Items.Count > 0)
-                                {
-                                    ddlBlock.Items[0].Selected = true;
-                                }
-
-                                txtMaintCharges.Focus();
-                            }
-                            else
-                            {
-                                txtResName.Text = "";
-                                txtAddress.Text = "";
-                                txtCNIC.Text = "";
-                                txtContact.Text = "";
-
-                                ddlCategory.ClearSelection();
-                                if (ddlCategory.Items.Count > 0) ddlCategory.Items[0].Selected = true;
-
-                                ddlNewCategory.ClearSelection();
-                                if (ddlNewCategory.Items.Count > 0) ddlNewCategory.Items[0].Selected = true;
-
-                                ddlPrcnt.ClearSelection();
-                                if (ddlPrcnt.Items.Count > 0) ddlPrcnt.Items[0].Selected = true;
-
-                                ddlBlock.ClearSelection();
-                                if (ddlBlock.Items.Count > 0) ddlBlock.Items[0].Selected = true;
-
-                                txtResId.Focus();
-                                ShowStatusMessage("Registration Number not found", "error");
-                            }
+                            ShowStatusMessage("Record loaded successfully", "success");
+                            txtMaintCharges.Focus();
+                        }
+                        else
+                        {
+                            ShowStatusMessage("Record not found with this Registration Number", "error");
                         }
                     }
                 }
             }
-            catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            ShowStatusMessage("Error: " + ex.Message, "error");
+        }
+    }
+
+    protected void LoadElectricId(string resId)
+    {
+        try
+        {
+
+            string sql = @"SELECT RES_ID FROM BILLS.RESID_INFO WHERE RES_ID_BK = :RES_ID";
+
+            using (OracleConnection con = new OracleConnection(connMain))
+            using (OracleCommand cmd = new OracleCommand(sql, con))
             {
-                txtResName.Text = "Error: " + ex.Message;
-                ShowStatusMessage("Error: " + ex.Message, "error");
+                cmd.Parameters.Add(new OracleParameter("RES_ID", Convert.ToInt32(resId)));
+                con.Open();
+
+                object result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    txtResIdE.Text = result.ToString();
+                }
+                else
+                {
+                    txtResIdE.Text = "";
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            txtResIdE.Text = "";
         }
     }
 
@@ -518,13 +433,24 @@ public partial class resid_info : System.Web.UI.Page
                 {
                     ShowStatusMessage("Record not found with RES_ID: " + resId, "error");
                     txtResId.Text = "";
-                    pcdClearForm();
+                    txtRegNo.Text = "";
+                    txtResId.Text = "";
+                    txtResIdE.Text = "";
+                    txtResName.Text = "";
+                    txtFatherName.Text = "";
+                    txtMaintCharges.Text = "";
+                    txtAddress.Text = "";
+                    txtCNIC.Text = "";
+                    txtContact.Text = "";
+                    txtStreet.Text = "";
+                    txtRemarks.Text = "";
                     txtResId.Focus();
                 }
                 else
                 {
-                    txtRegNo.Enabled = false;
+                    txtRegNo.Enabled = true;
                     txtResId.Enabled = true;
+                    txtResIdE.Enabled = true;
                     txtResName.Enabled = true;
                     txtFatherName.Enabled = true;
                     txtAddress.Enabled = true;
@@ -532,6 +458,7 @@ public partial class resid_info : System.Web.UI.Page
                     txtContact.Enabled = true;
                     txtStreet.Enabled = true;
                     txtMaintCharges.Enabled = true;
+                    txtRemarks.Enabled = true;
                     ddlCategory.Enabled = true;
                     ddlNewCategory.Enabled = true;
                     ddlPrcnt.Enabled = true;
@@ -548,203 +475,14 @@ public partial class resid_info : System.Web.UI.Page
         }
     }
 
-//    protected bool LoadResidentialData(string resId)
-//    {
-//        string connMNT = WebConfigurationManager.ConnectionStrings["MyDbConnectionMNT"].ConnectionString;
-
-//        try
-//        {
-//            string checkSql = "SELECT COUNT(*) FROM RESIDENTIAL_INFO WHERE RES_ID = :RES_ID";
-//            int count = 0;
-
-//            using (OracleConnection con = new OracleConnection(connMNT))
-//            using (OracleCommand checkCmd = new OracleCommand(checkSql, con))
-//            {
-//                checkCmd.Parameters.Add(new OracleParameter("RES_ID", Convert.ToInt32(resId)));
-//                con.Open();
-//                count = Convert.ToInt32(checkCmd.ExecuteScalar());
-//            }
-
-//            if (count == 0)
-//            {
-//                return false;
-//            }
-
-//            string sql = @"SELECT * FROM RESIDENTIAL_INFO WHERE RES_ID = :RES_ID";
-//            bool recordFound = false;
-
-//            using (OracleConnection con = new OracleConnection(connMNT))
-//            using (OracleCommand cmd = new OracleCommand(sql, con))
-//            {
-//                cmd.Parameters.Add(new OracleParameter("RES_ID", Convert.ToInt32(resId)));
-//                con.Open();
-
-//                using (OracleDataReader dr = cmd.ExecuteReader())
-//                {
-//                    if (dr.Read())
-//                    {
-//                        recordFound = true;
-
-//                        txtRegNo.Text = dr["RES_CODE"] != DBNull.Value ? dr["RES_CODE"].ToString() : "";
-//                        txtResName.Text = dr["RES_NAME"] != DBNull.Value ? dr["RES_NAME"].ToString() : "";
-//                        txtFatherName.Text = dr["FATHERNAME"] != DBNull.Value ? dr["FATHERNAME"].ToString() : "";
-//                        txtAddress.Text = dr["HOUSE_NO"] != DBNull.Value ? dr["HOUSE_NO"].ToString() : "";
-//                        txtCNIC.Text = dr["CNIC_NO"] != DBNull.Value ? dr["CNIC_NO"].ToString() : "";
-//                        txtContact.Text = dr["CONTACT_NO"] != DBNull.Value ? dr["CONTACT_NO"].ToString() : "";
-
-//                        txtStreet.Text = dr["STREET_ID"] != DBNull.Value ? dr["STREET_ID"].ToString() : "";
-//                        txtMaintCharges.Text = dr["MAINT_CHARGES"] != DBNull.Value ? dr["MAINT_CHARGES"].ToString() : "0";
-
-//                        // Set Category
-//                        ddlCategory.ClearSelection();
-//                        if (dr["RCAT_ID"] != DBNull.Value && dr["RCAT_ID"].ToString() != "0")
-//                        {
-//                            string rcatId = dr["RCAT_ID"].ToString();
-//                            ListItem item = ddlCategory.Items.FindByValue(rcatId);
-//                            if (item != null)
-//                            {
-//                                item.Selected = true;
-//                            }
-//                            else if (ddlCategory.Items.Count > 0)
-//                            {
-//                                ddlCategory.Items[0].Selected = true;
-//                            }
-//                        }
-//                        else if (ddlCategory.Items.Count > 0)
-//                        {
-//                            ddlCategory.Items[0].Selected = true;
-//                        }
-
-//                        // Set Precinct
-//                        ddlPrcnt.ClearSelection();
-//                        if (dr["PRECENT_ID"] != DBNull.Value && dr["PRECENT_ID"].ToString() != "0")
-//                        {
-//                            string precintId = dr["PRECENT_ID"].ToString();
-//                            ListItem prcnt = ddlPrcnt.Items.FindByValue(precintId);
-//                            if (prcnt != null)
-//                            {
-//                                prcnt.Selected = true;
-//                            }
-//                            else if (ddlPrcnt.Items.Count > 0)
-//                            {
-//                                ddlPrcnt.Items[0].Selected = true;
-//                            }
-//                        }
-//                        else if (ddlPrcnt.Items.Count > 0)
-//                        {
-//                            ddlPrcnt.Items[0].Selected = true;
-//                        }
-
-//                        // Set Block
-//                        ddlBlock.ClearSelection();
-//                        if (dr["BLOCK_ID"] != DBNull.Value && dr["BLOCK_ID"].ToString() != "0")
-//                        {
-//                            string blockId = dr["BLOCK_ID"].ToString();
-//                            ListItem block = ddlBlock.Items.FindByValue(blockId);
-//                            if (block != null)
-//                            {
-//                                block.Selected = true;
-//                            }
-//                            else if (ddlBlock.Items.Count > 0)
-//                            {
-//                                ddlBlock.Items[0].Selected = true;
-//                            }
-//                        }
-//                        else if (ddlBlock.Items.Count > 0)
-//                        {
-//                            ddlBlock.Items[0].Selected = true;
-//                        }
-//                    }
-//                }
-//            }
-
-//            // Load New Category
-//            string sqlNewCat = @"SELECT CAT_ID, CAT_NM, CAT_COST 
-//                                 FROM RES_CAT_MAINT_NEW 
-//                                 WHERE RES_ID = :RES_ID";
-
-//            using (OracleConnection con = new OracleConnection(connMNT))
-//            using (OracleCommand cmd = new OracleCommand(sqlNewCat, con))
-//            {
-//                cmd.Parameters.Add(new OracleParameter("RES_ID", Convert.ToInt32(resId)));
-//                con.Open();
-
-//                using (OracleDataReader dr = cmd.ExecuteReader())
-//                {
-//                    ddlNewCategory.ClearSelection();
-
-//                    if (dr.Read() && dr["CAT_ID"] != DBNull.Value && dr["CAT_ID"].ToString() != "0")
-//                    {
-//                        string catId = dr["CAT_ID"].ToString();
-//                        ListItem newItem = ddlNewCategory.Items.FindByValue(catId);
-//                        if (newItem != null)
-//                        {
-//                            newItem.Selected = true;
-//                        }
-//                        else if (ddlNewCategory.Items.Count > 0)
-//                        {
-//                            ddlNewCategory.Items[0].Selected = true;
-//                        }
-//                    }
-//                    else if (ddlNewCategory.Items.Count > 0)
-//                    {
-//                        ddlNewCategory.Items[0].Selected = true;
-//                    }
-//                }
-//            }
-
-//            // Load Electric ID
-//            string sqlE = @"SELECT NVL(MAX(E.RESID),0)+1 RES_ID FROM BILLS.BIL_ELEC E 
-//                            WHERE E.BGID=(SELECT B.BG_ID FROM BILL_GENERATE B WHERE B.IS_LOCKED='N')";
-
-//            using (OracleConnection con = new OracleConnection(connMNT))
-//            using (OracleCommand cmd = new OracleCommand(sqlE, con))
-//            {
-//                con.Open();
-//                using (OracleDataReader dr = cmd.ExecuteReader())
-//                {
-//                    if (dr.Read())
-//                    {
-//                        txtResIdE.Text = dr["RES_ID"] != DBNull.Value ? dr["RES_ID"].ToString() : "";
-//                    }
-//                }
-//            }
-
-//            return recordFound;
-//        }
-//        catch (Exception ex)
-//        {
-//            ShowStatusMessage("Error: " + ex.Message, "error");
-//            return false;
-//        }
-//    }
-
     protected bool LoadResidentialData(string resId)
     {
-        string connMNT = WebConfigurationManager.ConnectionStrings["MyDbConnectionMNT"].ConnectionString;
-
         try
         {
-            string checkSql = "SELECT COUNT(*) FROM RESIDENTIAL_INFO WHERE RES_ID = :RES_ID";
-            int count = 0;
-
-            using (OracleConnection con = new OracleConnection(connMNT))
-            using (OracleCommand checkCmd = new OracleCommand(checkSql, con))
-            {
-                checkCmd.Parameters.Add(new OracleParameter("RES_ID", Convert.ToInt32(resId)));
-                con.Open();
-                count = Convert.ToInt32(checkCmd.ExecuteScalar());
-            }
-
-            if (count == 0)
-            {
-                return false;
-            }
-
             string sql = @"SELECT * FROM RESIDENTIAL_INFO WHERE RES_ID = :RES_ID";
             bool recordFound = false;
 
-            using (OracleConnection con = new OracleConnection(connMNT))
+            using (OracleConnection con = new OracleConnection(connStr))
             using (OracleCommand cmd = new OracleCommand(sql, con))
             {
                 cmd.Parameters.Add(new OracleParameter("RES_ID", Convert.ToInt32(resId)));
@@ -755,31 +493,22 @@ public partial class resid_info : System.Web.UI.Page
                     if (dr.Read())
                     {
                         recordFound = true;
-
-                        txtRegNo.Text = dr["RES_CODE"] != DBNull.Value ? dr["RES_CODE"].ToString() : "";
                         txtResName.Text = dr["RES_NAME"] != DBNull.Value ? dr["RES_NAME"].ToString() : "";
                         txtFatherName.Text = dr["FATHERNAME"] != DBNull.Value ? dr["FATHERNAME"].ToString() : "";
                         txtAddress.Text = dr["HOUSE_NO"] != DBNull.Value ? dr["HOUSE_NO"].ToString() : "";
                         txtCNIC.Text = dr["CNIC_NO"] != DBNull.Value ? dr["CNIC_NO"].ToString() : "";
                         txtContact.Text = dr["CONTACT_NO"] != DBNull.Value ? dr["CONTACT_NO"].ToString() : "";
-
                         txtStreet.Text = dr["STREET_ID"] != DBNull.Value ? dr["STREET_ID"].ToString() : "";
                         txtMaintCharges.Text = dr["MAINT_CHARGES"] != DBNull.Value ? dr["MAINT_CHARGES"].ToString() : "0";
+                        txtRemarks.Text = dr["REMARKS"] != DBNull.Value ? dr["REMARKS"].ToString() : "";
 
                         // Set Category
                         ddlCategory.ClearSelection();
                         if (dr["RCAT_ID"] != DBNull.Value && dr["RCAT_ID"].ToString() != "0")
                         {
-                            string rcatId = dr["RCAT_ID"].ToString();
-                            ListItem item = ddlCategory.Items.FindByValue(rcatId);
-                            if (item != null)
-                            {
-                                item.Selected = true;
-                            }
-                            else if (ddlCategory.Items.Count > 0)
-                            {
-                                ddlCategory.Items[0].Selected = true;
-                            }
+                            ListItem item = ddlCategory.Items.FindByValue(dr["RCAT_ID"].ToString());
+                            if (item != null) item.Selected = true;
+                            else if (ddlCategory.Items.Count > 0) ddlCategory.Items[0].Selected = true;
                         }
                         else if (ddlCategory.Items.Count > 0)
                         {
@@ -790,16 +519,9 @@ public partial class resid_info : System.Web.UI.Page
                         ddlPrcnt.ClearSelection();
                         if (dr["PRECENT_ID"] != DBNull.Value && dr["PRECENT_ID"].ToString() != "0")
                         {
-                            string precintId = dr["PRECENT_ID"].ToString();
-                            ListItem prcnt = ddlPrcnt.Items.FindByValue(precintId);
-                            if (prcnt != null)
-                            {
-                                prcnt.Selected = true;
-                            }
-                            else if (ddlPrcnt.Items.Count > 0)
-                            {
-                                ddlPrcnt.Items[0].Selected = true;
-                            }
+                            ListItem prcnt = ddlPrcnt.Items.FindByValue(dr["PRECENT_ID"].ToString());
+                            if (prcnt != null) prcnt.Selected = true;
+                            else if (ddlPrcnt.Items.Count > 0) ddlPrcnt.Items[0].Selected = true;
                         }
                         else if (ddlPrcnt.Items.Count > 0)
                         {
@@ -810,16 +532,9 @@ public partial class resid_info : System.Web.UI.Page
                         ddlBlock.ClearSelection();
                         if (dr["BLOCK_ID"] != DBNull.Value && dr["BLOCK_ID"].ToString() != "0")
                         {
-                            string blockId = dr["BLOCK_ID"].ToString();
-                            ListItem block = ddlBlock.Items.FindByValue(blockId);
-                            if (block != null)
-                            {
-                                block.Selected = true;
-                            }
-                            else if (ddlBlock.Items.Count > 0)
-                            {
-                                ddlBlock.Items[0].Selected = true;
-                            }
+                            ListItem block = ddlBlock.Items.FindByValue(dr["BLOCK_ID"].ToString());
+                            if (block != null) block.Selected = true;
+                            else if (ddlBlock.Items.Count > 0) ddlBlock.Items[0].Selected = true;
                         }
                         else if (ddlBlock.Items.Count > 0)
                         {
@@ -830,11 +545,8 @@ public partial class resid_info : System.Web.UI.Page
             }
 
             // Load New Category
-            string sqlNewCat = @"SELECT CAT_ID, CAT_NM, CAT_COST 
-                             FROM RES_CAT_MAINT_NEW 
-                             WHERE RES_ID = :RES_ID";
-
-            using (OracleConnection con = new OracleConnection(connMNT))
+            string sqlNewCat = @"SELECT CAT_ID, CAT_NM, CAT_COST FROM RES_CAT_MAINT_NEW WHERE RES_ID = :RES_ID";
+            using (OracleConnection con = new OracleConnection(connStr))
             using (OracleCommand cmd = new OracleCommand(sqlNewCat, con))
             {
                 cmd.Parameters.Add(new OracleParameter("RES_ID", Convert.ToInt32(resId)));
@@ -843,19 +555,11 @@ public partial class resid_info : System.Web.UI.Page
                 using (OracleDataReader dr = cmd.ExecuteReader())
                 {
                     ddlNewCategory.ClearSelection();
-
                     if (dr.Read() && dr["CAT_ID"] != DBNull.Value && dr["CAT_ID"].ToString() != "0")
                     {
-                        string catId = dr["CAT_ID"].ToString();
-                        ListItem newItem = ddlNewCategory.Items.FindByValue(catId);
-                        if (newItem != null)
-                        {
-                            newItem.Selected = true;
-                        }
-                        else if (ddlNewCategory.Items.Count > 0)
-                        {
-                            ddlNewCategory.Items[0].Selected = true;
-                        }
+                        ListItem newItem = ddlNewCategory.Items.FindByValue(dr["CAT_ID"].ToString());
+                        if (newItem != null) newItem.Selected = true;
+                        else if (ddlNewCategory.Items.Count > 0) ddlNewCategory.Items[0].Selected = true;
                     }
                     else if (ddlNewCategory.Items.Count > 0)
                     {
@@ -864,10 +568,9 @@ public partial class resid_info : System.Web.UI.Page
                 }
             }
 
-            // Load BARCODE from RESIDENTIAL_BARCODE table
             string sqlBarcode = @"SELECT BARCODE FROM RESIDENTIAL_BARCODE WHERE RES_ID = :RES_ID AND BTYPE_ID = 3";
 
-            using (OracleConnection con = new OracleConnection(connMNT))
+            using (OracleConnection con = new OracleConnection(connStr))
             using (OracleCommand cmd = new OracleCommand(sqlBarcode, con))
             {
                 cmd.Parameters.Add(new OracleParameter("RES_ID", Convert.ToInt32(resId)));
@@ -877,28 +580,13 @@ public partial class resid_info : System.Web.UI.Page
                 {
                     if (dr.Read() && dr["BARCODE"] != DBNull.Value)
                     {
-                        // Display the barcode in the Registration Number field
                         txtRegNo.Text = dr["BARCODE"].ToString();
                     }
                 }
             }
 
             // Load Electric ID
-            string sqlE = @"SELECT NVL(MAX(E.RESID),0)+1 RES_ID FROM BILLS.BIL_ELEC E 
-                        WHERE E.BGID=(SELECT B.BG_ID FROM BILL_GENERATE B WHERE B.IS_LOCKED='N')";
-
-            using (OracleConnection con = new OracleConnection(connMNT))
-            using (OracleCommand cmd = new OracleCommand(sqlE, con))
-            {
-                con.Open();
-                using (OracleDataReader dr = cmd.ExecuteReader())
-                {
-                    if (dr.Read())
-                    {
-                        txtResIdE.Text = dr["RES_ID"] != DBNull.Value ? dr["RES_ID"].ToString() : "";
-                    }
-                }
-            }
+            LoadElectricId(resId);
 
             return recordFound;
         }
@@ -911,50 +599,127 @@ public partial class resid_info : System.Web.UI.Page
 
     protected void pcdBarcodeExists()
     {
-        int mCount = 0;
         string btkNo = txtRegNo.Text.Trim();
 
         if (string.IsNullOrEmpty(btkNo))
             return;
 
-        string connStr = WebConfigurationManager.ConnectionStrings["MyDbConnectionMNT"].ConnectionString;
-        string sql = @"SELECT COUNT(*) CNTT FROM RESIDENTIAL_BARCODE WHERE BTYPE_ID=3 AND BARCODE=:btkNo";
-
-        using (OracleConnection con = new OracleConnection(connStr))
-        using (OracleCommand cmd = new OracleCommand(sql, con))
+        if (mEdit == 0)
         {
-            cmd.Parameters.Add(new OracleParameter("btkNo", btkNo));
-            con.Open();
-            mCount = Convert.ToInt32(cmd.ExecuteScalar());
-        }
-
-        if (mCount == 0)
-        {
-            sql = @"SELECT NVL(MAX(RES_ID),0)+1 RES_ID FROM RESIDENTIAL_INFO";
-
             using (OracleConnection con = new OracleConnection(connStr))
-            using (OracleCommand cmd = new OracleCommand(sql, con))
             {
+                string sql = "";
                 con.Open();
-                txtResId.Text = cmd.ExecuteScalar().ToString();
+
+                sql = @"
+                    SELECT NVL(MAX(RES_ID),0) + 1 RES_ID FROM RESIDENTIAL_INFO
+                ";
+
+                using (OracleCommand cmd = new OracleCommand(sql, con))
+                {
+                    using (OracleDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            txtResId.Text = reader["RES_ID"] != DBNull.Value ? reader["RES_ID"].ToString() : "";
+                        }
+                    }
+                }
+
+                sql = @"
+                    SELECT NVL(MAX(RES_ID),0) + 1 RES_ID FROM BILLS.RESID_INFO
+                ";
+
+                using (OracleCommand cmd = new OracleCommand(sql, con))
+                {
+                    using (OracleDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            txtResIdE.Text = reader["RES_ID"] != DBNull.Value ? reader["RES_ID"].ToString() : "";
+                        }
+                    }
+                }
             }
 
-            sql = @"SELECT NVL(MAX(E.RESID),0)+1 RES_ID FROM BILLS.BIL_ELEC E 
-                    WHERE E.BGID=(SELECT B.BG_ID FROM BILL_GENERATE B WHERE B.IS_LOCKED='N')";
-
-            using (OracleConnection con = new OracleConnection(connStr))
-            using (OracleCommand cmd = new OracleCommand(sql, con))
-            {
-                con.Open();
-                txtResIdE.Text = cmd.ExecuteScalar().ToString();
-            }
+            //            ShowModeIndicator();
         }
+        else
+        {
+            LoadElectricId(txtResId.Text);
+        }
+
+        //string sql = @"SELECT COUNT(*) FROM RESIDENTIAL_BARCODE WHERE BTYPE_ID=3 AND BARCODE=:btkNo";
+
+        //using (OracleConnection con = new OracleConnection(connStr))
+        //using (OracleCommand cmd = new OracleCommand(sql, con))
+        //{
+        //    cmd.Parameters.Add(new OracleParameter("btkNo", btkNo));
+        //    con.Open();
+        //    int mCount = Convert.ToInt32(cmd.ExecuteScalar());
+
+        //    if (mCount == 0)
+        //    {
+        //        txtResId.Text = "";
+        //        // New Record - Generate next RES_ID
+        //        string sqlGetMaxId = @"SELECT NVL(MAX(RES_ID),0) + 1 FROM RESIDENTIAL_INFO";
+        //        using (OracleCommand cmdMax = new OracleCommand(sqlGetMaxId, con))
+        //        {
+        //            object result = cmdMax.ExecuteScalar();
+        //            txtResId.Text = (result != null && result != DBNull.Value) ? result.ToString() : "1";
+        //        }
+
+        //        txtResIdE.Text = "";
+        //        // New Record - Generate next RES_ID
+        //        sqlGetMaxId = @"SELECT NVL(MAX(RES_ID),0) + 1 FROM BILL.RESID_INFO";
+        //        using (OracleCommand cmdMax = new OracleCommand(sqlGetMaxId, con))
+        //        {
+        //            object result = cmdMax.ExecuteScalar();
+        //            txtResIdE.Text = (result != null && result != DBNull.Value) ? result.ToString() : "1";
+        //        }
+
+        //        mEdit = 0;
+        //        txtResId.Enabled = false;
+        //        txtResIdE.Enabled = false;
+        //        ShowModeIndicator();
+        //    }
+        //    else
+        //    {
+        //        // Existing Record - Load it for viewing
+        //        mEdit = 1;
+        //        LoadRecordByBarcode(btkNo);
+        //        txtResId.Enabled = false;
+        //        txtResIdE.Enabled = false;
+        //        txtRegNo.Enabled = true;
+        //        ShowModeIndicator();
+        //        ShowStatusMessage("Record already exists! Viewing mode - Click Edit button to modify.", "info");
+        //    }
+        //}
     }
 
     protected void btnSave_Click(object sender, EventArgs e)
     {
         if (mEdit == 0)
         {
+            // Check if record already exists before inserting
+            string regNo = txtRegNo.Text.Trim();
+            if (!string.IsNullOrEmpty(regNo))
+            {
+                string checkSql = @"SELECT COUNT(*) FROM RESIDENTIAL_BARCODE WHERE BTYPE_ID=3 AND BARCODE=:barcode";
+                using (OracleConnection con = new OracleConnection(connStr))
+                using (OracleCommand cmd = new OracleCommand(checkSql, con))
+                {
+                    cmd.Parameters.Add(new OracleParameter("barcode", regNo));
+                    con.Open();
+                    int exists = Convert.ToInt32(cmd.ExecuteScalar());
+                    if (exists > 0)
+                    {
+                        ShowStatusMessage("Record already exists! Cannot save. Use Edit mode to modify.", "error");
+                        return;
+                    }
+                }
+            }
+
             if (string.IsNullOrEmpty(txtResName.Text.Trim()))
             {
                 ShowStatusMessage("Please enter Resident Name", "error");
@@ -1000,38 +765,25 @@ public partial class resid_info : System.Web.UI.Page
 
     protected void InsertNewRecord()
     {
-        int userId = 0;
-        string userName = "";
-        string currentDate = "";
-        string ipAddress = "";
-
-        if (Session["User"] != null)
-        {
-            int.TryParse(Session["login_id"].ToString(), out userId);
-            userName = Session["login_name"].ToString();
-            currentDate = DateTime.Now.ToString("dd-MMM-yy");
-            ipAddress = Request.UserHostAddress;
-        }
-
-        string connMNT = WebConfigurationManager.ConnectionStrings["MyDbConnectionMNT"].ConnectionString;
-        string connMain = WebConfigurationManager.ConnectionStrings["MyDbConnection"].ConnectionString;
+        string userName = Session["User"] != null ? Session["login_name"].ToString() : "";
+        string ipAddress = Request.UserHostAddress;
 
         int resID = Convert.ToInt32(txtResId.Text.Trim());
 
         try
         {
             // INSERT RESIDENTIAL_INFO
-            using (OracleConnection con = new OracleConnection(connMNT))
+            using (OracleConnection con = new OracleConnection(connStr))
             using (OracleCommand cmd = new OracleCommand(@"
                 INSERT INTO RESIDENTIAL_INFO (
                     RES_ID, RES_CODE, RES_NAME, HOUSE_NO, CNIC_NO, 
                     DT_INSERT, INSERT_BY, INSERT_IP, FATHERNAME, CONTACT_NO, RCAT_ID, M_FACT_RATE, 
-                    COMP_ID, PRECENT_ID, BLOCK_ID, MAINT_CHARGES, STREET_ID, 
+                    COMP_ID, PRECENT_ID, BLOCK_ID, MAINT_CHARGES, STREET_ID, REMARKS,
                     BILL_WO, ELECT, WATER, GAS, BILL_STOPED, WATER_FIXED_BILLS
                 ) VALUES (
                     :RES_ID,:RES_CODE,:RES_NAME,:HOUSE_NO,:CNIC_NO,
                     :DT_INSERT,:INSERT_BY,:INSERT_IP,:FATHERNAME,:CONTACT_NO,:RCAT_ID,:M_FACT_RATE,
-                    :COMP_ID,:PRECENT_ID,:BLOCK_ID,:MAINT_CHARGES,:STREET_ID,
+                    :COMP_ID,:PRECENT_ID,:BLOCK_ID,:MAINT_CHARGES,:STREET_ID,:REMARKS,
                     :BILL_WO,:ELECT,:WATER,:GAS,:BILL_STOPED,:WATER_FIXED_BILLS
                 )", con))
             {
@@ -1040,29 +792,23 @@ public partial class resid_info : System.Web.UI.Page
                 cmd.Parameters.Add("RES_NAME", OracleDbType.Varchar2).Value = txtResName.Text.Trim();
                 cmd.Parameters.Add("HOUSE_NO", OracleDbType.Varchar2).Value = txtAddress.Text.Trim();
                 cmd.Parameters.Add("CNIC_NO", OracleDbType.Varchar2).Value = txtCNIC.Text.Trim();
-
                 cmd.Parameters.Add("DT_INSERT", OracleDbType.Date).Value = DateTime.Now;
                 cmd.Parameters.Add("INSERT_BY", OracleDbType.Varchar2).Value = userName;
                 cmd.Parameters.Add("INSERT_IP", OracleDbType.Varchar2).Value = ipAddress;
-
                 cmd.Parameters.Add("FATHERNAME", OracleDbType.Varchar2).Value = txtFatherName.Text.Trim();
                 cmd.Parameters.Add("CONTACT_NO", OracleDbType.Varchar2).Value = txtContact.Text.Trim();
                 cmd.Parameters.Add("RCAT_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlCategory.SelectedValue);
-
                 cmd.Parameters.Add("M_FACT_RATE", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("COMP_ID", OracleDbType.Int32).Value = 1;
-
                 cmd.Parameters.Add("PRECENT_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlPrcnt.SelectedValue);
                 cmd.Parameters.Add("BLOCK_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlBlock.SelectedValue);
-
                 cmd.Parameters.Add("MAINT_CHARGES", OracleDbType.Int32).Value = string.IsNullOrEmpty(txtMaintCharges.Text.Trim()) ? 0 : Convert.ToInt32(txtMaintCharges.Text.Trim());
                 cmd.Parameters.Add("STREET_ID", OracleDbType.Int32).Value = string.IsNullOrEmpty(txtStreet.Text.Trim()) ? 0 : Convert.ToInt32(txtStreet.Text.Trim());
-
+                cmd.Parameters.Add("REMARKS", OracleDbType.Varchar2).Value = txtRemarks.Text.Trim();
                 cmd.Parameters.Add("BILL_WO", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("ELECT", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("WATER", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("GAS", OracleDbType.Int32).Value = 1;
-
                 cmd.Parameters.Add("BILL_STOPED", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("WATER_FIXED_BILLS", OracleDbType.Int32).Value = 0;
 
@@ -1071,19 +817,15 @@ public partial class resid_info : System.Web.UI.Page
             }
 
             // INSERT CATEGORY
-            using (OracleConnection con = new OracleConnection(connMNT))
+            using (OracleConnection con = new OracleConnection(connStr))
             using (OracleCommand cmd = new OracleCommand(@"
-            INSERT INTO RES_CAT_MAINT_NEW (
-                RES_ID, CAT_ID, CAT_NM, CAT_COST
-            ) VALUES (
-                :RES_ID,:CAT_ID,:CAT_NM,:CAT_COST
-            )", con))
+                INSERT INTO RES_CAT_MAINT_NEW (RES_ID, CAT_ID, CAT_NM, CAT_COST)
+                VALUES (:RES_ID, :CAT_ID, :CAT_NM, :CAT_COST)", con))
             {
                 cmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = resID;
                 cmd.Parameters.Add("CAT_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlNewCategory.SelectedValue);
                 cmd.Parameters.Add("CAT_NM", OracleDbType.Varchar2).Value = ddlNewCategory.SelectedItem.Text;
                 cmd.Parameters.Add("CAT_COST", OracleDbType.Int32).Value = string.IsNullOrEmpty(txtMaintCharges.Text.Trim()) ? 0 : Convert.ToInt32(txtMaintCharges.Text.Trim());
-
                 con.Open();
                 cmd.ExecuteNonQuery();
             }
@@ -1091,48 +833,41 @@ public partial class resid_info : System.Web.UI.Page
             // INSERT BILLS.RESID_INFO
             using (OracleConnection con = new OracleConnection(connMain))
             using (OracleCommand cmd = new OracleCommand(@"
-            INSERT INTO BILLS.RESID_INFO (
-                RES_ID_BK, RES_ID, RES_CODE, RES_NAME, HOUSE_NO, CNIC_NO, 
-                FATHERNAME, CONTACT_NO, RCAT_ID, M_FACT_RATE, COMP_ID, 
-                PRECENT_ID, PRECENT_NM, BLOCK_ID, BLOCK_NM, 
-                BIL_WO_MAINT, BIL_WO_ELEC, BIL_WO_WATER, BIL_WO_GAS, 
-                BIL_WO_SOLAR, BIL_WO_RENT, EMP_STATUS, EMP_ID, LOG_ID
-            ) VALUES (
-                :RES_ID_BK,:RES_ID,:RES_CODE,:RES_NAME,:HOUSE_NO,:CNIC_NO,
-                :FATHERNAME,:CONTACT_NO,:RCAT_ID,:M_FACT_RATE,:COMP_ID,
-                :PRECENT_ID,:PRECENT_NM,:BLOCK_ID,:BLOCK_NM,
-                :BIL_WO_MAINT,:BIL_WO_ELEC,:BIL_WO_WATER,:BIL_WO_GAS,
-                :BIL_WO_SOLAR,:BIL_WO_RENT,:EMP_STATUS,:EMP_ID,:LOG_ID
-            )", con))
+                INSERT INTO BILLS.RESID_INFO (
+                    RES_ID_BK, RES_ID, RES_CODE, RES_NAME, HOUSE_NO, CNIC_NO, 
+                    FATHERNAME, CONTACT_NO, RCAT_ID, M_FACT_RATE, COMP_ID, 
+                    PRECENT_ID, PRECENT_NM, BLOCK_ID, BLOCK_NM, 
+                    BIL_WO_MAINT, BIL_WO_ELEC, BIL_WO_WATER, BIL_WO_GAS, 
+                    BIL_WO_SOLAR, BIL_WO_RENT, EMP_STATUS, EMP_ID, LOG_ID
+                ) VALUES (
+                    :RES_ID_BK,:RES_ID,:RES_CODE,:RES_NAME,:HOUSE_NO,:CNIC_NO,
+                    :FATHERNAME,:CONTACT_NO,:RCAT_ID,:M_FACT_RATE,:COMP_ID,
+                    :PRECENT_ID,:PRECENT_NM,:BLOCK_ID,:BLOCK_NM,
+                    :BIL_WO_MAINT,:BIL_WO_ELEC,:BIL_WO_WATER,:BIL_WO_GAS,
+                    :BIL_WO_SOLAR,:BIL_WO_RENT,:EMP_STATUS,:EMP_ID,:LOG_ID
+                )", con))
             {
                 cmd.Parameters.Add("RES_ID_BK", OracleDbType.Int32).Value = resID;
-                cmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = resID;
-
+                cmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = string.IsNullOrEmpty(txtResIdE.Text.Trim()) ? 0 : Convert.ToInt32(txtResIdE.Text.Trim());
                 cmd.Parameters.Add("RES_CODE", OracleDbType.Varchar2).Value = "R-" + resID.ToString().PadLeft(6, '0');
                 cmd.Parameters.Add("RES_NAME", OracleDbType.Varchar2).Value = txtResName.Text.Trim();
                 cmd.Parameters.Add("HOUSE_NO", OracleDbType.Varchar2).Value = txtAddress.Text.Trim();
                 cmd.Parameters.Add("CNIC_NO", OracleDbType.Varchar2).Value = txtCNIC.Text.Trim();
-
                 cmd.Parameters.Add("FATHERNAME", OracleDbType.Varchar2).Value = txtFatherName.Text.Trim();
                 cmd.Parameters.Add("CONTACT_NO", OracleDbType.Varchar2).Value = txtContact.Text.Trim();
                 cmd.Parameters.Add("RCAT_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlNewCategory.SelectedValue);
-
                 cmd.Parameters.Add("M_FACT_RATE", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("COMP_ID", OracleDbType.Int32).Value = 1;
-
                 cmd.Parameters.Add("PRECENT_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlPrcnt.SelectedValue);
                 cmd.Parameters.Add("PRECENT_NM", OracleDbType.Varchar2).Value = ddlPrcnt.SelectedItem.Text;
-
                 cmd.Parameters.Add("BLOCK_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlBlock.SelectedValue);
                 cmd.Parameters.Add("BLOCK_NM", OracleDbType.Varchar2).Value = ddlBlock.SelectedItem.Text;
-
                 cmd.Parameters.Add("BIL_WO_MAINT", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("BIL_WO_ELEC", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("BIL_WO_WATER", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("BIL_WO_GAS", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("BIL_WO_SOLAR", OracleDbType.Int32).Value = 1;
                 cmd.Parameters.Add("BIL_WO_RENT", OracleDbType.Int32).Value = 1;
-
                 cmd.Parameters.Add("EMP_STATUS", OracleDbType.Int32).Value = 0;
                 cmd.Parameters.Add("EMP_ID", OracleDbType.Int32).Value = 0;
                 cmd.Parameters.Add("LOG_ID", OracleDbType.Int32).Value = 0;
@@ -1141,7 +876,20 @@ public partial class resid_info : System.Web.UI.Page
                 cmd.ExecuteNonQuery();
             }
 
-            ShowStatusMessage("Record saved successfully", "success");
+            // INSERT RESIDENTIAL_BARCODE
+            using (OracleConnection con = new OracleConnection(connStr))
+            using (OracleCommand cmd = new OracleCommand(@"
+                INSERT INTO RESIDENTIAL_BARCODE (RES_ID, BARCODE, BTYPE_ID)
+                VALUES (:RES_ID, :BARCODE, :BTYPE_ID)", con))
+            {
+                cmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = resID;
+                cmd.Parameters.Add("BARCODE", OracleDbType.Varchar2).Value = txtRegNo.Text.Trim();
+                cmd.Parameters.Add("BTYPE_ID", OracleDbType.Int32).Value = 3;
+                con.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            ShowStatusMessage("Record saved successfully! New Residential ID: " + resID, "success");
             pcdInit();
         }
         catch (Exception ex)
@@ -1152,39 +900,21 @@ public partial class resid_info : System.Web.UI.Page
 
     protected void UpdateExistingRecord()
     {
-        string userName = "";
-        string ipAddress = "";
-
-        if (Session["User"] != null)
-        {
-            userName = Session["login_name"].ToString();
-            ipAddress = Request.UserHostAddress;
-        }
-
-        string connMNT = WebConfigurationManager.ConnectionStrings["MyDbConnectionMNT"].ConnectionString;
-        string connMain = WebConfigurationManager.ConnectionStrings["MyDbConnection"].ConnectionString;
-
+        string userName = Session["User"] != null ? Session["login_name"].ToString() : "";
+        string ipAddress = Request.UserHostAddress;
         int resID = Convert.ToInt32(txtResId.Text.Trim());
 
         try
         {
             // UPDATE RESIDENTIAL_INFO
-            using (OracleConnection con = new OracleConnection(connMNT))
+            using (OracleConnection con = new OracleConnection(connStr))
             using (OracleCommand cmd = new OracleCommand(@"
                 UPDATE RESIDENTIAL_INFO SET
-                    RES_NAME = :RES_NAME,
-                    HOUSE_NO = :HOUSE_NO,
-                    CNIC_NO = :CNIC_NO,
-                    DT_UPDATE = :DT_UPDATE,
-                    UPDATE_BY = :UPDATE_BY,
-                    UPDATE_IP = :UPDATE_IP,
-                    FATHERNAME = :FATHERNAME,
-                    CONTACT_NO = :CONTACT_NO,
-                    RCAT_ID = :RCAT_ID,
-                    PRECENT_ID = :PRECENT_ID,
-                    BLOCK_ID = :BLOCK_ID,
-                    MAINT_CHARGES = :MAINT_CHARGES,
-                    STREET_ID = :STREET_ID
+                    RES_NAME = :RES_NAME, HOUSE_NO = :HOUSE_NO, CNIC_NO = :CNIC_NO,
+                    DT_UPDATE = :DT_UPDATE, UPDATE_BY = :UPDATE_BY, UPDATE_IP = :UPDATE_IP,
+                    FATHERNAME = :FATHERNAME, CONTACT_NO = :CONTACT_NO, RCAT_ID = :RCAT_ID,
+                    PRECENT_ID = :PRECENT_ID, BLOCK_ID = :BLOCK_ID,
+                    MAINT_CHARGES = :MAINT_CHARGES, STREET_ID = :STREET_ID, REMARKS = :REMARKS
                 WHERE RES_ID = :RES_ID", con))
             {
                 cmd.Parameters.Add("RES_NAME", OracleDbType.Varchar2).Value = txtResName.Text.Trim();
@@ -1200,12 +930,11 @@ public partial class resid_info : System.Web.UI.Page
                 cmd.Parameters.Add("BLOCK_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlBlock.SelectedValue);
                 cmd.Parameters.Add("MAINT_CHARGES", OracleDbType.Int32).Value = string.IsNullOrEmpty(txtMaintCharges.Text.Trim()) ? 0 : Convert.ToInt32(txtMaintCharges.Text.Trim());
                 cmd.Parameters.Add("STREET_ID", OracleDbType.Int32).Value = string.IsNullOrEmpty(txtStreet.Text.Trim()) ? 0 : Convert.ToInt32(txtStreet.Text.Trim());
+                cmd.Parameters.Add("REMARKS", OracleDbType.Varchar2).Value = txtRemarks.Text.Trim();
                 cmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = resID;
 
                 con.Open();
-                int rowsAffected = cmd.ExecuteNonQuery();
-
-                if (rowsAffected == 0)
+                if (cmd.ExecuteNonQuery() == 0)
                 {
                     ShowStatusMessage("Record not found for update!", "error");
                     return;
@@ -1216,7 +945,7 @@ public partial class resid_info : System.Web.UI.Page
             string checkSql = "SELECT COUNT(*) FROM RES_CAT_MAINT_NEW WHERE RES_ID = :RES_ID";
             int recordExists = 0;
 
-            using (OracleConnection con = new OracleConnection(connMNT))
+            using (OracleConnection con = new OracleConnection(connStr))
             using (OracleCommand checkCmd = new OracleCommand(checkSql, con))
             {
                 checkCmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = resID;
@@ -1226,26 +955,22 @@ public partial class resid_info : System.Web.UI.Page
 
             if (recordExists > 0)
             {
-                using (OracleConnection con = new OracleConnection(connMNT))
+                using (OracleConnection con = new OracleConnection(connStr))
                 using (OracleCommand cmd = new OracleCommand(@"
-                    UPDATE RES_CAT_MAINT_NEW SET
-                        CAT_ID = :CAT_ID,
-                        CAT_NM = :CAT_NM,
-                        CAT_COST = :CAT_COST
+                    UPDATE RES_CAT_MAINT_NEW SET CAT_ID = :CAT_ID, CAT_NM = :CAT_NM, CAT_COST = :CAT_COST
                     WHERE RES_ID = :RES_ID", con))
                 {
                     cmd.Parameters.Add("CAT_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlNewCategory.SelectedValue);
                     cmd.Parameters.Add("CAT_NM", OracleDbType.Varchar2).Value = ddlNewCategory.SelectedItem.Text;
                     cmd.Parameters.Add("CAT_COST", OracleDbType.Int32).Value = string.IsNullOrEmpty(txtMaintCharges.Text.Trim()) ? 0 : Convert.ToInt32(txtMaintCharges.Text.Trim());
                     cmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = resID;
-
                     con.Open();
                     cmd.ExecuteNonQuery();
                 }
             }
             else
             {
-                using (OracleConnection con = new OracleConnection(connMNT))
+                using (OracleConnection con = new OracleConnection(connStr))
                 using (OracleCommand cmd = new OracleCommand(@"
                     INSERT INTO RES_CAT_MAINT_NEW (RES_ID, CAT_ID, CAT_NM, CAT_COST)
                     VALUES (:RES_ID, :CAT_ID, :CAT_NM, :CAT_COST)", con))
@@ -1254,27 +979,22 @@ public partial class resid_info : System.Web.UI.Page
                     cmd.Parameters.Add("CAT_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlNewCategory.SelectedValue);
                     cmd.Parameters.Add("CAT_NM", OracleDbType.Varchar2).Value = ddlNewCategory.SelectedItem.Text;
                     cmd.Parameters.Add("CAT_COST", OracleDbType.Int32).Value = string.IsNullOrEmpty(txtMaintCharges.Text.Trim()) ? 0 : Convert.ToInt32(txtMaintCharges.Text.Trim());
-
                     con.Open();
                     cmd.ExecuteNonQuery();
                 }
             }
 
-            // UPDATE BILLS.RESID_INFO
+            // UPDATE BILLS.RESID_INFO 
+            int mRes_IDE = txtResIdE.Text.Trim();
+
             using (OracleConnection con = new OracleConnection(connMain))
             using (OracleCommand cmd = new OracleCommand(@"
                 UPDATE BILLS.RESID_INFO SET
-                    RES_NAME = :RES_NAME,
-                    HOUSE_NO = :HOUSE_NO,
-                    CNIC_NO = :CNIC_NO,
-                    FATHERNAME = :FATHERNAME,
-                    CONTACT_NO = :CONTACT_NO,
-                    RCAT_ID = :RCAT_ID,
-                    PRECENT_ID = :PRECENT_ID,
-                    PRECENT_NM = :PRECENT_NM,
-                    BLOCK_ID = :BLOCK_ID,
-                    BLOCK_NM = :BLOCK_NM
-                WHERE RES_ID = :RES_ID", con))
+                    RES_NAME = :RES_NAME, HOUSE_NO = :HOUSE_NO, CNIC_NO = :CNIC_NO,
+                    FATHERNAME = :FATHERNAME, CONTACT_NO = :CONTACT_NO, RCAT_ID = :RCAT_ID,
+                    PRECENT_ID = :PRECENT_ID, PRECENT_NM = :PRECENT_NM,
+                    BLOCK_ID = :BLOCK_ID, BLOCK_NM = :BLOCK_NM, RES_ID = :mRes_IDE
+                WHERE RES_ID_BK = :RES_ID", con))
             {
                 cmd.Parameters.Add("RES_NAME", OracleDbType.Varchar2).Value = txtResName.Text.Trim();
                 cmd.Parameters.Add("HOUSE_NO", OracleDbType.Varchar2).Value = txtAddress.Text.Trim();
@@ -1287,6 +1007,7 @@ public partial class resid_info : System.Web.UI.Page
                 cmd.Parameters.Add("BLOCK_ID", OracleDbType.Int32).Value = Convert.ToInt32(ddlBlock.SelectedValue);
                 cmd.Parameters.Add("BLOCK_NM", OracleDbType.Varchar2).Value = ddlBlock.SelectedItem.Text;
                 cmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = resID;
+                cmd.Parameters.Add("RES_ID", OracleDbType.Int32).Value = mRes_IDE;
 
                 con.Open();
                 cmd.ExecuteNonQuery();
@@ -1319,8 +1040,7 @@ public partial class resid_info : System.Web.UI.Page
             statusMessage.Attributes["class"] = "status-message status-info";
         }
 
-        // Auto hide after 3 seconds
-        string script = "setTimeout(function() { var elem = document.getElementById('" + statusMessage.ClientID + "'); if(elem) elem.style.display = 'none'; }, 3000);";
+        string script = "setTimeout(function() { var elem = document.getElementById('" + statusMessage.ClientID + "'); if(elem) elem.style.display = 'none'; }, 2000);";
         ClientScript.RegisterStartupScript(this.GetType(), "HideStatus_" + Guid.NewGuid().ToString(), script, true);
     }
 }

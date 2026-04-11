@@ -24,45 +24,61 @@
             overflow: hidden;
         }
 
-        /* Header buttons matching theme */
-        .header-btns {
-            background-color: black;
-            color: white !important;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.2s ease-in-out;
-            text-decoration: none !important;
-            display: inline-block;
+        /* HEADER - Full Width */
+        header { 
+            position: sticky; 
+            top: 0; 
+            background: #fff; 
+            border-bottom: 1px solid #e5e7eb; 
+            padding: 12px 20px; 
+            margin: 0;
+            display: flex; 
+            gap: 12px; 
+            align-items: center; 
         }
 
-            .header-btns:hover {
-                background-color: #0a5e40;
-                text-decoration: none !important;
-            }
+        .header-btns { 
+            background-color: black; 
+            color: white !important; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            transition: background-color 0.2s ease-in-out; 
+            text-decoration: none !important; 
+            display: inline-block; 
+        }
 
-        /* ===== MAIN CONTAINER ===== */
+        .header-btns:hover { 
+            background-color: #333; 
+        }
+
+        .header-border { 
+            border-top: 30px solid #000; 
+            width: 100%; 
+            margin-bottom: 0; 
+        }
+
+        /* ===== MAIN CONTAINER - Full Width ===== */
         .container {
             width: 100%;
             height: 100vh;
             margin: 0;
             background-color: white;
-            padding: 10px 15px;
+            padding: 0;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* ===== BUTTON PANEL ===== */
+        /* ===== BUTTON PANEL - Full Width ===== */
         .button-panel {
             margin: 5px 0 10px;
-            padding: 8px 10px;
+            padding: 8px 20px;
             background-color: #e6e6e6;
             border: 1px solid #999;
-            border-radius: 3px;
+            border-radius: 0;
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
@@ -92,92 +108,60 @@
             min-width: 40px;
         }
 
-            .icon-btn:hover {
-                transform: scale(1.1);
-                background-color: rgba(0,0,0,0.02);
-            }
-
-        .copy-btn {
-            color: #2196F3;
+        .icon-btn:hover {
+            transform: scale(1.1);
+            background-color: rgba(0,0,0,0.02);
         }
 
-        .post-btn {
-            color: #4f9c52;
-        }
-
-        .unpost-btn {
-            color: #d44339;
-        }
-
-        .save-btn {
-            color: #0f7c57;
-        }
-
-        .clear-btn {
-            color: #d78204;
-        }
-
-        .nav-btn {
-            color: #2196F3;
-        }
-
+        .copy-btn { color: #2196F3; }
+        .post-btn { color: #4f9c52; }
+        .unpost-btn { color: #d44339; }
+        .save-btn { color: #0f7c57; }
+        .clear-btn { color: #d78204; }
+        .nav-btn { color: #2196F3; }
+        
         .add-btn {
             color: #0f7c57;
             font-size: 16px;
             padding: 8px 16px;
         }
+        .add-btn i { margin-right: 5px; }
 
-            .add-btn i {
-                margin-right: 5px;
-            }
+        .copy-btn:hover { color: #1976D2; }
+        .post-btn:hover { color: #388E3C; }
+        .unpost-btn:hover { color: #d32f2f; }
+        .save-btn:hover { color: #0f7c57; }
+        .clear-btn:hover { color: #f57c00; }
+        .nav-btn:hover { color: #3187dc; }
+        .add-btn:hover { color: #2d6a2d; }
 
-        /* Hover effects */
-        .copy-btn:hover {
-            color: #1976D2;
+        .print-btn {
+            color: #721c24;
+            padding: 6px 15px;
+            border-radius: 3px;
+            font-weight: bold;
+            display: inline-block;
         }
-
-        .post-btn:hover {
-            color: #388E3C;
-        }
-
-        .unpost-btn:hover {
-            color: #d32f2f;
-        }
-
-        .save-btn:hover {
-            color: #0f7c57;
-        }
-
-        .clear-btn:hover {
-            color: #f57c00;
-        }
-
-        .nav-btn:hover {
-            color: #3187dc;
-        }
-
-        .add-btn:hover {
-            color: #2d6a2d;
-        }
+        .print-btn:hover { color: #721c24; }
 
         /* ===== VOUCHER HEADER ===== */
         .voucher-header {
             background-color: #e6e6e6;
-            padding: 8px 10px;
+            padding: 8px 20px;
             margin-bottom: 10px;
             border: 1px solid #999;
-            border-radius: 3px;
+            border-radius: 0;
             flex-shrink: 0;
         }
 
-            .voucher-header table {
-                width: 100%;
-                border-collapse: collapse;
-            }
+        .voucher-header table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-            .voucher-header td {
-                padding: 5px;
-            }
+        .voucher-header td {
+            padding: 5px;
+        }
 
         .header-label {
             font-weight: bold;
@@ -205,7 +189,7 @@
             overflow-x: auto;
             width: 100%;
             border: 1px solid #ddd;
-            border-radius: 3px;
+            border-radius: 0;
             flex-grow: 1;
             overflow-y: auto;
             position: relative;
@@ -218,98 +202,69 @@
             table-layout: fixed;
         }
 
-            .gridview-style th {
-                background-color: #0f7c57;
-                color: white;
-                padding: 10px 5px;
-                text-align: left;
-                white-space: nowrap;
-                font-weight: bold;
-                border: 1px solid #45a049;
-            }
+        .gridview-style th {
+            background-color: #0f7c57;
+            color: white;
+            padding: 10px 5px;
+            text-align: left;
+            white-space: nowrap;
+            font-weight: bold;
+            border: 1px solid #45a049;
+        }
 
-            .gridview-style td {
-                padding: 5px;
-                border: 1px solid #ddd;
-                background-color: white;
-            }
+        .gridview-style td {
+            padding: 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
 
-            .gridview-style tr:nth-child(even) td {
-                background-color: #f9f9f9;
-            }
+        .gridview-style tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
 
-            .gridview-style tr:hover td {
-                background-color: #f5f5f5;
-            }
+        .gridview-style tr:hover td {
+            background-color: #f5f5f5;
+        }
 
-            .gridview-style input[type="text"] {
-                width: 100%;
-                box-sizing: border-box;
-                padding: 6px 4px;
-                border: 1px solid #ccc;
-                border-radius: 3px;
-                font-size: 12px;
-            }
+        .gridview-style input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px 4px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 12px;
+        }
 
-                .gridview-style input[type="text"]:focus {
-                    border-color: #0f7c57;
-                    outline: none;
-                    box-shadow: 0 0 3px #0f7c57;
-                }
+        .gridview-style input[type="text"]:focus {
+            border-color: #0f7c57;
+            outline: none;
+            box-shadow: 0 0 3px #0f7c57;
+        }
 
-            .gridview-style tfoot tr {
-                position: sticky;
-                bottom: 0;
-                background-color: #e6e6e6;
-                z-index: 10;
-            }
+        .gridview-style tfoot tr {
+            position: sticky;
+            bottom: 0;
+            background-color: #e6e6e6;
+            z-index: 10;
+        }
 
-            .gridview-style tfoot td {
-                background-color: #e6e6e6;
-                font-weight: bold;
-                border-top: 2px solid #999;
-            }
+        .gridview-style tfoot td {
+            background-color: #e6e6e6;
+            font-weight: bold;
+            border-top: 2px solid #999;
+        }
 
         /* Column widths */
-        .col-gl-code {
-            width: 80px;
-        }
-
-        .col-gl-type {
-            width: 90px;
-        }
-
-        .col-sl-code {
-            width: 80px;
-        }
-
-        .col-sl-type {
-            width: 60px;
-        }
-
-        .col-narration {
-            width: 120px;
-        }
-
-        .col-bill {
-            width: 100px;
-        }
-
-        .col-cheque {
-            width: 100px;
-        }
-
-        .col-amount {
-            width: 100px;
-        }
-
-        .col-cost {
-            width: 80px;
-        }
-
-        .col-action {
-            width: 20px;
-        }
+        .col-gl-code { width: 80px; }
+        .col-gl-type { width: 90px; }
+        .col-sl-code { width: 80px; }
+        .col-sl-type { width: 60px; }
+        .col-narration { width: 120px; }
+        .col-bill { width: 100px; }
+        .col-cheque { width: 100px; }
+        .col-amount { width: 100px; }
+        .col-cost { width: 80px; }
+        .col-action { width: 20px; }
 
         /* Grid action icons */
         .grid-icon {
@@ -326,14 +281,8 @@
             justify-content: center;
         }
 
-        .delete-icon {
-            color: #f44336;
-        }
-
-            .delete-icon:hover {
-                color: #d32f2f;
-                transform: scale(1.2);
-            }
+        .delete-icon { color: #f44336; }
+        .delete-icon:hover { color: #d32f2f; transform: scale(1.2); }
 
         /* ===== STATUS LABELS ===== */
         .status-posted {
@@ -357,13 +306,13 @@
         /* ===== TOTAL ROW ===== */
         .total-row {
             margin-top: 10px;
-            padding: 10px 15px;
+            padding: 10px 20px;
             background-color: #e6e6e6;
             font-weight: bold;
             font-size: 16px;
             text-align: right;
             border: 1px solid #999;
-            border-radius: 3px;
+            border-radius: 0;
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
@@ -388,20 +337,18 @@
             background: white;
         }
 
-            .ui-autocomplete .ui-menu-item {
-                padding: 5px 10px;
-                border-bottom: 1px solid #eee;
-            }
-
-                .ui-autocomplete .ui-menu-item:hover {
-                    background-color: #0f7c57;
-                    color: white;
-                    cursor: pointer;
-                }
-
-        .ui-helper-hidden-accessible {
-            display: none;
+        .ui-autocomplete .ui-menu-item {
+            padding: 5px 10px;
+            border-bottom: 1px solid #eee;
         }
+
+        .ui-autocomplete .ui-menu-item:hover {
+            background-color: #0f7c57;
+            color: white;
+            cursor: pointer;
+        }
+
+        .ui-helper-hidden-accessible { display: none; }
 
         /* GL Description field read-only */
         .gl-type-input[readonly] {
@@ -441,10 +388,7 @@
             border-radius: 5px 5px 0 0;
         }
 
-        .modal-body {
-            padding: 15px;
-        }
-
+        .modal-body { padding: 15px; }
         .modal-footer {
             padding: 15px;
             background-color: #f5f5f5;
@@ -453,29 +397,16 @@
         }
 
         /* ===== HEADINGS ===== */
-        h2 {
-            margin: 0 0 15px;
-            color: #333;
-        }
-
-        h4 {
-            margin: 10px 0 5px;
-            color: #555;
-        }
+        h2 { margin: 0 0 15px; color: #333; }
+        h4 { margin: 10px 0 5px; color: #555; }
 
         /* ===== RESPONSIVE ===== */
         @media screen and (max-width: 1400px) {
-            .gridview-style {
-                font-size: 11px;
-            }
-
-                .gridview-style input[type="text"] {
-                    padding: 4px;
-                    font-size: 11px;
-                }
+            .gridview-style { font-size: 11px; }
+            .gridview-style input[type="text"] { padding: 4px; font-size: 11px; }
         }
 
-        /* Inline snackbar styles - appears next to heading */
+        /* Inline snackbar styles */
         .snackbar-inline {
             visibility: hidden;
             min-width: 250px;
@@ -490,53 +421,32 @@
             align-items: center;
             font-size: 13px;
             margin-left: 15px;
-            flex-shrink: 0; /* Prevents shrinking */
+            flex-shrink: 0;
             max-width: 400px;
         }
 
-            .snackbar-inline.show {
-                visibility: visible;
-                animation: fadein 0.3s;
-            }
+        .snackbar-inline.show {
+            visibility: visible;
+            animation: fadein 0.3s;
+        }
 
-            .snackbar-inline.success {
-                background-color: #0f7c57;
-            }
+        .snackbar-inline.success { background-color: #0f7c57; }
+        .snackbar-inline.error { background-color: #f44336; }
+        .snackbar-inline.warning { background-color: #ff9800; }
+        .snackbar-inline.info { background-color: #2196F3; }
 
-            .snackbar-inline.error {
-                background-color: #f44336;
-            }
-
-            .snackbar-inline.warning {
-                background-color: #ff9800;
-            }
-
-            .snackbar-inline.info {
-                background-color: #2196F3;
-            }
-
-            .snackbar-inline .snackbar-close {
-                cursor: pointer;
-                font-weight: bold;
-                margin-left: 15px;
-                padding: 0 5px;
-                opacity: 0.8;
-            }
-
-                .snackbar-inline .snackbar-close:hover {
-                    opacity: 1;
-                }
+        .snackbar-inline .snackbar-close {
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 15px;
+            padding: 0 5px;
+            opacity: 0.8;
+        }
+        .snackbar-inline .snackbar-close:hover { opacity: 1; }
 
         @keyframes fadein {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
     </style>
     <script type="text/javascript">
@@ -575,23 +485,18 @@
             });
         }
 
-        // SL Code AutoComplete setup - SINGLE VERSION
+        // SL Code AutoComplete setup
         function setupSLAutoComplete() {
-
             $('.sl-code-input').autocomplete({
                 source: function (request, response) {
-
                     var row = $(this.element).closest('tr');
                     var glCodeInput = row.find('.gl-code-input');
                     var glCode = glCodeInput ? glCodeInput.val() : '';
-
-                    console.log("GL Code from row: '" + glCode + "'");
 
                     if (!glCode) {
                         response([]);
                         return;
                     }
-
 
                     $.ajax({
                         type: "POST",
@@ -600,12 +505,10 @@
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
                         success: function (data) {
-
                             if (!data.d || data.d.length === 0) {
                                 response([]);
                                 return;
                             }
-
                             var mapped = $.map(data.d, function (item) {
                                 return {
                                     label: item.SL_CODE + " - " + item.DESCRIP,
@@ -614,12 +517,10 @@
                                     desc: item.DESCRIP
                                 };
                             });
-
                             response(mapped);
                         },
                         error: function (xhr, status, error) {
                             console.log("❌ AJAX Error: " + error);
-                            console.log("Response:", xhr.responseText);
                             response([]);
                         }
                     });
@@ -631,11 +532,6 @@
                     row.find('.sl-type-input').val(ui.item.desc);
                     __doPostBack($(this).attr('name'), '');
                     return false;
-                },
-                open: function () {
-                },
-                close: function () {
-                    console.log("Autocomplete dropdown closed");
                 }
             });
         }
@@ -689,29 +585,24 @@
 <body>
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server" />
+
         <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="margin: 0;">Bank Payment Voucher</h2>
-
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <asp:Label ID="Label1" runat="server" ForeColor="Blue" Font-Bold="true" />
-                    <asp:LinkButton ID="LinkButton1" runat="server"
-                        CssClass="header-btns"
-                        OnClick="btnGoBack_Click"
-                        CausesValidation="false">Go Back</asp:LinkButton>
-                    <asp:LinkButton ID="LinkButton2" runat="server"
-                        CssClass="header-btns"
-                        OnClick="btnLogoff_Click"
-                        CausesValidation="false">Log off</asp:LinkButton>
+            <!-- HEADER with Black Bar -->
+            <div id="border_header" class="header-border"></div>
+            <header>
+                <div style="font-weight:bold; font-size:18px;">Bank Payment Voucher</div>
+                <div style="margin-left:auto; display:flex; gap:10px;">
+                    <asp:LinkButton ID="btnGoBack" runat="server" CssClass="header-btns" OnClick="btnGoBack_Click">Go Back</asp:LinkButton>
+                    <asp:Label ID="lblUser" runat="server" ForeColor="Blue" Font-Bold="true" />
+                    <asp:LinkButton ID="btnLogoff" runat="server" CssClass="header-btns" OnClick="btnLogoff_Click">Log off</asp:LinkButton>
                 </div>
-            </div>
-
+            </header>
 
             <!-- Button Panel -->
             <div class="button-panel">
                 <asp:LinkButton ID="btnCopyVoucher" runat="server" CssClass="icon-btn copy-btn"
                     OnClick="btnCopyVoucher_Click" ToolTip="Copy Voucher" Visible="false">
-    <i class="fas fa-copy"></i>
+                    <i class="fas fa-copy"></i>
                 </asp:LinkButton>
                 <asp:LinkButton ID="btnPost" runat="server" CssClass="icon-btn post-btn"
                     OnClick="btnPost_Click" ToolTip="Post"><i class="fas fa-check-circle"></i></asp:LinkButton>
@@ -721,27 +612,26 @@
                     OnClick="btnSave_Click" ToolTip="Save Voucher"><i class="fas fa-save"></i></asp:LinkButton>
                 <asp:LinkButton ID="btnClear" runat="server" CssClass="icon-btn clear-btn"
                     OnClick="btnClear_Click" ToolTip="Clear"><i class="fas fa-eraser"></i></asp:LinkButton>
-
+                <asp:LinkButton ID="btnPrint" runat="server" CssClass="icon-btn print-btn"
+                    OnClick="btnPrint_Click" ToolTip="Print Voucher">
+                    <i class="fas fa-print"></i>
+                </asp:LinkButton>
                 <asp:LinkButton ID="btnFirst" runat="server" CssClass="icon-btn nav-btn"
                     OnClick="btnFirst_Click" ToolTip="First Voucher">
-    <i class="fas fa-chevron-left"></i><i class="fas fa-chevron-left"></i>
+                    <i class="fas fa-chevron-left"></i><i class="fas fa-chevron-left"></i>
                 </asp:LinkButton>
-
                 <asp:LinkButton ID="btnPrevious" runat="server" CssClass="icon-btn nav-btn"
                     OnClick="btnPrevious_Click" ToolTip="Previous Voucher">
-    <i class="fas fa-chevron-left"></i>
+                    <i class="fas fa-chevron-left"></i>
                 </asp:LinkButton>
-
                 <asp:LinkButton ID="btnNext" runat="server" CssClass="icon-btn nav-btn"
                     OnClick="btnNext_Click" ToolTip="Next Voucher">
-    <i class="fas fa-chevron-right"></i>
+                    <i class="fas fa-chevron-right"></i>
                 </asp:LinkButton>
-
                 <asp:LinkButton ID="btnLast" runat="server" CssClass="icon-btn nav-btn"
                     OnClick="btnLast_Click" ToolTip="Last Voucher">
-    <i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i>
+                    <i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i>
                 </asp:LinkButton>
-
                 <div class="status-container">
                     <asp:Label ID="lblStatus" runat="server" CssClass="status-unposted" Text="UnPosted" />
                 </div>
@@ -775,15 +665,14 @@
             </div>
 
             <!-- Heading Row with Snackbar -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 5px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 20px 5px 20px;">
                 <h4 style="margin: 0;">Voucher Details</h4>
-
-                <!-- Snackbar Notification - In same row as heading -->
                 <div id="snackbar" class="snackbar-inline">
                     <span id="snackbarMessage"></span>
                     <span class="snackbar-close" onclick="closeSnackbar()">✕</span>
                 </div>
             </div>
+
             <!-- Voucher Details Grid -->
             <div class="grid-container">
                 <asp:GridView ID="gvVoucherDetails" runat="server"
@@ -913,7 +802,8 @@
                             <tr>
                                 <td style="width: 100px;">Voucher Key:</td>
                                 <td style="width: 200px;">
-                                    <asp:TextBox ID="txtSearchVoucherKey" runat="server" Width="180px" /></td>
+                                    <asp:TextBox ID="txtSearchVoucherKey" runat="server" Width="180px" />
+                                </td>
                                 <td style="width: 80px;">Book Type:</td>
                                 <td style="width: 200px;">
                                     <asp:DropDownList ID="ddlSearchBookType" runat="server" Width="180px">

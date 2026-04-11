@@ -55,6 +55,22 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
         Response.Redirect("~/login/Login.aspx", false);
     }
 
+    protected void btnPrint_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            string voucherKey = lblGJV.Text; // Change label name as per your screen
+            string voucherType = GetVoucherTypeFromKey(voucherKey);
+
+            string url = "~/frm/gl/reports/voucher_report.aspx?VoucherKey=" + Server.UrlEncode(voucherKey) + "&VoucherType=" + voucherType;
+            string script = "window.open('" + ResolveUrl(url) + "', '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');";
+            ScriptManager.RegisterStartupScript(this, GetType(), "PrintVoucher", script, true);
+        }
+        catch (Exception ex)
+        {
+            ShowSnackbar("Error opening report: " + ex.Message, "error");
+        }
+    }
     #endregion
 
     #region Grid Operations
@@ -1431,4 +1447,14 @@ public partial class GL_Journal_Voucher : System.Web.UI.Page
     }
 
     #endregion
+
+    private string GetVoucherTypeFromKey(string voucherKey)
+    {
+        string[] parts = voucherKey.Split('-');
+        if (parts.Length >= 2)
+        {
+            return parts[1]; // Returns CPV, CRV, GPV, GRV, GJV
+        }
+        return "GJV"; // Default
+    }
 }

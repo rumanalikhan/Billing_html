@@ -40,7 +40,7 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
         }
         else
         {
-            Response.Redirect("~/main_menu.aspx");
+            Response.Redirect("~/main_menu/main_menu.aspx");
         }
     }
 
@@ -100,6 +100,9 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
             case "btnJournalVoucher":
                 Response.Redirect("~/frm/gl/transactions/gl_journal_voucher.aspx");
                 break;
+            case "btnVoucherStatus":
+                Response.Redirect("~/frm/gl/transactions/voucher_status.aspx");
+                break;
             default:
                 ClientScript.RegisterStartupScript(this.GetType(), "alert",
                     "alert('Transaction menu item not configured: " + buttonId + "');", true);
@@ -115,6 +118,9 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
 
         switch (buttonId)
         {
+            case "btnViewVoucher":
+                Response.Redirect("~/frm/gl/reports/view_voucher.aspx");
+                break;
             case "btnAuditTrial":
                 Response.Redirect("~/frm/gl/audit_trial.aspx");
                 break;

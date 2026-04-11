@@ -12,6 +12,8 @@ public partial class chart_of_accounts_report : System.Web.UI.Page
     {
         if (!IsPostBack)
         {
+            // Set print date
+            lblPrintDate.Text = DateTime.Now.ToString("dd/MM/yyyy hh:mm tt");
             LoadReport();
         }
     }
@@ -44,8 +46,8 @@ public partial class chart_of_accounts_report : System.Web.UI.Page
             int level = Convert.ToInt32(row["LEVELL"]);
             string description = row["GL_DESCRP"].ToString();
 
-            // Create indentation based on level (level 1 = 0 tabs, level 2 = 1 tab, level 3 = 2 tabs, etc.)
-            string indent = new string('\t', level - 1);
+            // Create indentation based on level (level 1 = 0 spaces, level 2 = 4 spaces, level 3 = 8 spaces, etc.)
+            string indent = new string(' ', (level - 1) * 4);
 
             // Update the description with indentation
             row["GL_DESCRP"] = indent + description;
@@ -55,19 +57,6 @@ public partial class chart_of_accounts_report : System.Web.UI.Page
     protected void btnBack_Click(object sender, EventArgs e)
     {
         Response.Redirect("~/frm/gl/setup/chart_of_accounts.aspx", false);
-    }
-
-    private string GetFamilyName(string familyCode)
-    {
-        switch (familyCode)
-        {
-            case "A": return "ASSETS";
-            case "L": return "LIABILITIES";
-            case "C": return "CAPITAL";
-            case "R": return "REVENUE";
-            case "E": return "EXPENSES";
-            default: return "OTHER";
-        }
     }
 
     private DataTable GetChartOfAccountsData()

@@ -15,21 +15,12 @@
             color: #333;
         }
 
-        header {
-            background: #2d2a26;
-            color: white;
-            padding: 15px 40px;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
         .container {
             display: flex;
             justify-content: center;
             padding: 40px;
         }
 
-        /* LEFT PANEL */
         .left-panel {
             background: #0f7c57;
             color: white;
@@ -53,7 +44,6 @@
             margin-bottom: 10px;
         }
 
-        /* FORM PANEL */
         .form-panel {
             background: white;
             padding: 30px;
@@ -68,7 +58,13 @@
             margin-bottom: 20px;
         }
 
-        /* Mode Indicator Styles */
+        .highlight-red {
+    background-color: #ffebee !important;
+    border: 1px solid #f44336 !important;
+    color: #c62828 !important;
+    font-weight: bold !important;
+}
+
         .mode-indicator-container {
             text-align: right;
             margin-bottom: 20px;
@@ -179,7 +175,6 @@
             border: 1px solid #bee5eb;
         }
         
-        /* Disabled field style */
         input:disabled, select:disabled, textarea:disabled {
             background-color: #e9ecef;
             cursor: not-allowed;
@@ -188,11 +183,8 @@
 </head>
 
 <body>
-
 <form id="form1" runat="server">
     <div class="container">
-
-        <!-- LEFT INFO PANEL -->
         <div class="left-panel">
             <h2>Resident Details</h2>
             <ul>
@@ -203,11 +195,9 @@
             </ul>
         </div>
 
-        <!-- FORM PANEL -->
         <div class="form-panel">
             <h2>Residential Info</h2>
             
-            <!-- Mode Indicator -->
             <div class="mode-indicator-container">
                 <asp:Label ID="lblMode" runat="server" CssClass="mode-indicator mode-insert" Text="INSERT MODE"></asp:Label>
             </div>
@@ -231,11 +221,11 @@
                 </div>
                 <div class="col">
                     <label>Residential ID</label>
-                    <asp:TextBox ID="txtResId" runat="server" CssClass="asp-input" Enabled="false" AutoPostBack="true" OnTextChanged="txtResId_TextChanged" />
+                    <asp:TextBox ID="txtResId" runat="server" CssClass="asp-input" AutoPostBack="true" OnTextChanged="txtResId_TextChanged" />
                 </div>
                 <div class="col">
                     <label>Residential ID (Electric)</label>
-                    <asp:TextBox ID="txtResIdE" runat="server" CssClass="asp-input" Enabled="false" />
+                    <asp:TextBox ID="txtResIdE" runat="server" CssClass="asp-input" />
                 </div>
             </div>
 
