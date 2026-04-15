@@ -315,11 +315,12 @@
             border-radius: 0;
             flex-shrink: 0;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
         }
 
         .total-amount {
+            margin-left: auto;
             font-weight: bold;
             color: #333;
         }
@@ -397,28 +398,12 @@
 
         /* ===== HEADINGS ===== */
         h2 { margin: 0 0 15px; color: #333; }
-        h4 { margin: 0; color: #555; }
+        h4 { margin: 10px 0 5px; color: #555; }
 
         /* ===== RESPONSIVE ===== */
         @media screen and (max-width: 1400px) {
             .gridview-style { font-size: 11px; }
             .gridview-style input[type="text"] { padding: 4px; font-size: 11px; }
-        }
-
-        /* Heading row with buttons */
-        .heading-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 20px 5px 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .heading-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
         }
 
         /* Inline snackbar styles */
@@ -435,6 +420,7 @@
             justify-content: space-between;
             align-items: center;
             font-size: 13px;
+            margin-left: 15px;
             flex-shrink: 0;
             max-width: 400px;
         }
@@ -653,7 +639,7 @@
 
             <!-- Voucher Header -->
             <div class="voucher-header">
-                <tr>
+                <table>
                     <tr>
                         <td class="header-label">Voucher Date:</td>
                         <td class="header-value">
@@ -672,18 +658,12 @@
                 </table>
             </div>
 
-            <!-- Heading Row with Snackbar and Add Rows -->
-            <div class="heading-row">
+            <!-- Heading Row with Snackbar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 20px 5px 20px;">
                 <h4 style="margin: 0;">Voucher Details</h4>
-                <div class="heading-left">
-                    <asp:LinkButton ID="btnAddRows" runat="server" CssClass="icon-btn add-btn"
-                        OnClick="btnAddRows_Click" ToolTip="Add More Rows">
-                        <i class="fas fa-plus-circle"></i> Add Rows
-                    </asp:LinkButton>
-                    <div id="snackbar" class="snackbar-inline">
-                        <span id="snackbarMessage"></span>
-                        <span class="snackbar-close" onclick="closeSnackbar()">✕</span>
-                    </div>
+                <div id="snackbar" class="snackbar-inline">
+                    <span id="snackbarMessage"></span>
+                    <span class="snackbar-close" onclick="closeSnackbar()">✕</span>
                 </div>
             </div>
 
@@ -804,6 +784,10 @@
 
             <!-- Total Row -->
             <div class="total-row">
+                <asp:LinkButton ID="btnAddRows" runat="server" CssClass="icon-btn add-btn"
+                    OnClick="btnAddRows_Click" ToolTip="Add More Rows">
+                    <i class="fas fa-plus-circle"></i> Add Rows
+                </asp:LinkButton>
                 <span class="total-amount">Total Amount:
                     <asp:Label ID="lblGrandTotal" runat="server" Font-Bold="true" Text="0.00" />
                 </span>
@@ -833,6 +817,9 @@
                                     <asp:DropDownList ID="ddlSearchBookType" runat="server" Width="180px">
                                         <asp:ListItem Text="-- All --" Value="" />
                                     </asp:DropDownList>
+                                    <asp:LinkButton ID="lblAddSL" runat="server" Font-Bold="true" Text="+"
+                                OnClick="btnSL_Click"
+                                Style="color: black; font-size: 20px; text-decoration: none;" />
                                 </td>
                             </tr>
                             <tr>
@@ -842,7 +829,7 @@
                                     <asp:LinkButton ID="btnReset" runat="server" CssClass="icon-btn clear-btn"
                                         OnClick="btnReset_Click" ToolTip="Reset"><i class="fas fa-undo"></i> Reset</asp:LinkButton>
                                 </td>
-                            </tr>
+                            </td>
                         </table>
                     </div>
 

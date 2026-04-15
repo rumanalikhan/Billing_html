@@ -172,12 +172,13 @@
         <div class="print-container">
             <!-- Buttons - No Print -->
             <div class="no-print header-container">
-                <h1 style="margin:0;">Chart of Accounts Report</h1>
-                <div class="button-group">
-                    <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print" CssClass="print-btn" OnClientClick="window.print();return false;" />
-                    <asp:Button ID="btnBack" runat="server" Text="← Back" CssClass="back-btn" OnClick="btnBack_Click" />
-                </div>
-            </div>
+    <h1 style="margin:0;">Chart of Accounts Report</h1>
+    <div class="button-group">
+        <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print" CssClass="print-btn" OnClientClick="window.print();return false;" />
+        <asp:Button ID="btnExcel" runat="server" Text="📊 Excel" CssClass="print-btn" OnClick="btnExcel_Click" />
+        <asp:Button ID="btnBack" runat="server" Text="< Back" CssClass="back-btn" OnClick="btnBack_Click" />
+    </div>
+</div>
             
             <!-- Company Header - Prints -->
             <div class="company-header">

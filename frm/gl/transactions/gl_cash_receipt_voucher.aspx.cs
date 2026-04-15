@@ -55,7 +55,12 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
         Session.Abandon();
         Response.Redirect("~/login/Login.aspx", false);
     }
-
+    protected void btnSL_Click(object sender, EventArgs e)
+    {
+        Session.Clear();
+        Session.Abandon();
+        Response.Redirect("~/frm/gl/setup/receivable_sl_type.aspx");
+    }
     protected void btnPrint_Click(object sender, EventArgs e)
     {
         try
@@ -816,11 +821,11 @@ public partial class GL_Cash_Receipt_Voucher : System.Web.UI.Page
                 string narration = row["NARATION"] != null ? row["NARATION"].ToString() : "";
 
                 InsertVoucherEntry(conn, transaction, ref lineNumber, bookType, creditGLCode,
-                    slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "2", narration, amount, 2, transactionLogId);
+                    slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "1", narration, amount, 1, transactionLogId);
                 rowsSaved++;
 
                 InsertVoucherEntry(conn, transaction, ref lineNumber, bookType, debitGLCode,
-                    slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "1", narration, amount, 1, transactionLogId);
+                    slTypeId, actualSLCode, costCentreCode, billNumber, chequeNumber, "2", narration, amount, 2, transactionLogId);
                 rowsSaved++;
             }
             catch (Exception ex)

@@ -128,10 +128,10 @@ public partial class main_menu_main_menu_gl : System.Web.UI.Page
                 Response.Redirect("~/frm/gl/reports/general_ledger_report.aspx");
                 break;
             case "btnJournalGeneralSub":
-                Response.Redirect("~/frm/gl/journal_general_sub.aspx");
+                Response.Redirect("~/frm/gl/reports/sub_ledger_report.aspx");
                 break;
             case "btnTrialBalance":
-                Response.Redirect("~/frm/gl/trial_balance.aspx");
+                Response.Redirect("~/frm/gl/reports/trial_balance_report.aspx");
                 break;
             case "btnTrialBalanceSub":
                 Response.Redirect("~/frm/gl/trial_balance_sub.aspx");

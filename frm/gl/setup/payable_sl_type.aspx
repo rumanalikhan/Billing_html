@@ -15,6 +15,40 @@
     <style>
         body { margin: 0; font-family: Segoe UI, sans-serif; background-color: #f4f6f8; }
 
+        /* SNACKBAR STYLES */
+        .snackbar {
+            visibility: hidden;
+            min-width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 12px 20px;
+            position: fixed;
+            z-index: 10000;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .snackbar.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        .snackbar-success { background-color: #28a745; }
+        .snackbar-error { background-color: #dc3545; }
+        .snackbar-info { background-color: #17a2b8; }
+        @keyframes fadein {
+            from { bottom: 0; opacity: 0; }
+            to { bottom: 30px; opacity: 1; }
+        }
+        @keyframes fadeout {
+            from { bottom: 30px; opacity: 1; }
+            to { bottom: 0; opacity: 0; }
+        }
+
         .container { display: flex; height: 100vh; }
 
         /* SIDEBAR */
@@ -35,14 +69,13 @@
         .right-content { flex: 1; padding: 15px; background: #f4f4f4; overflow-y: auto; }
 
         /* FORM STYLES */
-        .form-panel { max-width: 800px; margin: 20px auto; background: #ffffff; padding: 30px 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+        .form-panel { max-width: 100%; margin: 20px auto; background: #ffffff; padding: 30px 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
         .panel-header { background: #dcdcdc; border: 1px solid #bdbdbd; padding: 8px 15px; font-size: 18px; font-weight: 600; margin-bottom: 25px; border-radius: 4px; }
 
         .form-table { width: 100%; border-collapse: collapse; }
         .form-table td { padding: 12px 10px; vertical-align: middle; }
         .form-table .label-cell { font-weight: 600; width: 120px; white-space: nowrap; font-size: 14px; }
         .form-table .value-cell { width: 300px; }
-        .form-table .readonly-cell { background-color: #f5f5f5; padding: 8px 12px; border-radius: 4px; border: 1px solid #e0e0e0; }
 
         /* INPUTS */
         .asp-input { width: 100%; padding: 8px 10px; font-size: 14px; border: 1px solid #bfbfbf; border-radius: 4px; box-sizing: border-box; }
@@ -66,6 +99,91 @@
         .btn-save:hover { background: #1f6f4a; color: white; }
         .btn-cancel:hover { background: #ce1f1f; color: white; }
 
+        /* BULK GRID */
+        .bulk-grid-container {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        .bulk-grid {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .bulk-grid th {
+            background: #0f7c57;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            border: 1px solid #0a5e42;
+        }
+        .bulk-grid td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .bulk-grid input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: Segoe UI, sans-serif;
+        }
+        .bulk-grid .glcode-input {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 25px;
+        }
+        .bulk-grid .readonly-field {
+            background-color: #f5f5f5;
+        }
+        .btn-remove-row {
+            color: red;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .bulk-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-add-row {
+            background: #0f7c57;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-add-row:hover {
+            background: #0a5e42;
+        }
+        .btn-bulk-submit {
+            background: #0f7c57;
+            color: white;
+            border: none;
+            padding: 8px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-bulk-submit:hover {
+            background: #0a5e42;
+        }
+        .auto-id {
+            background-color: #e8f0fe;
+            font-weight: 600;
+            color: #0f7c57;
+            text-align: center;
+            padding: 6px;
+            border-radius: 4px;
+            display: inline-block;
+            width: 80%;
+        }
+
         /* STATUS */
         .status-label { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; font-weight: bold; }
         .status-success { background-color: #d4edda; color: #155724; }
@@ -88,7 +206,10 @@
 
 <body>
     <form id="form1" runat="server">
-        <asp:ScriptManager ID="ScriptManager1" runat="server" />
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" />
+
+        <!-- SNACKBAR -->
+        <div id="snackbar" class="snackbar"></div>
 
         <!-- HEADER -->
         <div id="border_header" class="header-border"></div>
@@ -106,11 +227,11 @@
             <div class="left-panel">
                 <h3>Payable SL Type Management</h3>
                 <ul>
-                    <li>GL Code will auto-fetch description</li>
+                    <li>GL Code will auto-fetch description & family</li>
                     <li>GL SL ID is auto-generated</li>
                     <li>Enter description for the SL Type</li>
-                    <li>Family auto-populates from GL account</li>
-                    <li>Click Save to create new SL Type</li>
+                    <li>Use Bulk Update grid for multiple entries</li>
+                    <li>Click Save Bulk to save all rows</li>
                 </ul>
             </div>
 
@@ -123,10 +244,9 @@
 
                 <!-- MAIN FORM PANEL -->
                 <div class="form-panel">
-                    <div class="panel-header">Payable SL Type Details</div>
+                    <div class="panel-header">Add Single SL Type</div>
                     
                     <table class="form-table">
-                        <!-- Row 1: GL Code with autocomplete -->
                         <tr>
                             <td class="label-cell">GL Code <span style="color:red;">*</span></td>
                             <td class="value-cell">
@@ -140,10 +260,9 @@
                             </td>
                         </tr>
                         
-                        <!-- Row 2: GL SL ID (Auto-generated) and Family -->
                         <tr>
                             <td class="label-cell">GL SL ID</td>
-                            <td class="value-cell">
+                            <td>
                                 <asp:TextBox ID="txtGLSLId" runat="server" CssClass="asp-input w-150 readonly-field auto-generated" 
                                     ReadOnly="true" />
                             </td>
@@ -154,7 +273,6 @@
                             </td>
                         </tr>
                         
-                        <!-- Row 3: GL SL Description -->
                         <tr>
                             <td class="label-cell">GL SL Description <span style="color:red;">*</span></td>
                             <td colspan="3">
@@ -164,16 +282,69 @@
                         </tr>
                     </table>
 
-                    <!-- BUTTONS -->
                     <div class="button-group">
-                        <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-save" OnClick="btnSave_Click" />
+                        <asp:Button ID="btnSave" runat="server" Text="Save Single" CssClass="btn btn-save" OnClick="btnSave_Click" />
                         <asp:Button ID="btnClear" runat="server" Text="Clear" CssClass="btn btn-cancel" OnClick="btnClear_Click" />
                     </div>
+                </div>
 
-                    <!-- STATUS -->
-                    <div id="statusContainer" runat="server" class="status-label" visible="false">
-                        <asp:Label ID="lblStatus" runat="server" />
+                <!-- BULK UPDATE GRID -->
+                <div class="form-panel">
+                    <div class="panel-header">Bulk Update SL Types</div>
+                    
+                    <div class="bulk-grid-container">
+                        <asp:GridView ID="gvBulkSL" runat="server" AutoGenerateColumns="false" CssClass="bulk-grid"
+                            OnRowDataBound="gvBulkSL_RowDataBound">
+                            <Columns>
+                                <asp:TemplateField HeaderText="GL SL ID" ItemStyle-Width="80px">
+                                    <ItemTemplate>
+                                        <asp:Label ID="lblAutoId" runat="server" CssClass="auto-id" />
+                                        <asp:HiddenField ID="hfRowIndex" runat="server" />
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField HeaderText="GL Code">
+                                    <ItemTemplate>
+                                        <asp:TextBox ID="txtGLCode" runat="server" CssClass="glcode-input" 
+                                            placeholder="Search GL Code..." />
+                                        <asp:HiddenField ID="hfGLCode" runat="server" />
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField HeaderText="GL Description">
+                                    <ItemTemplate>
+                                        <asp:TextBox ID="txtGLDesc" runat="server" CssClass="readonly-field" 
+                                            ReadOnly="true" style="background:#f5f5f5;" />
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField HeaderText="Family" ItemStyle-Width="80px">
+                                    <ItemTemplate>
+                                        <asp:TextBox ID="txtFamily" runat="server" CssClass="readonly-field" 
+                                            ReadOnly="true" style="background:#f5f5f5;" />
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField HeaderText="Description">
+                                    <ItemTemplate>
+                                        <asp:TextBox ID="txtDescription" runat="server" MaxLength="100" 
+                                            placeholder="Enter description" style="width:100%;" />
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField HeaderText="Action" ItemStyle-Width="60px">
+                                    <ItemTemplate>
+                                        <button type="button" class="btn-remove-row" onclick="removeGridRow(this)">✕</button>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                            </Columns>
+                        </asp:GridView>
                     </div>
+                    
+                    <div class="bulk-actions">
+                        <button type="button" class="btn-add-row" onclick="addGridRow()">+ Add Row</button>
+                        <asp:Button ID="btnSaveBulk" runat="server" Text="Save All Rows" CssClass="btn-bulk-submit" OnClick="btnSaveBulk_Click" />
+                    </div>
+                </div>
+
+                <!-- STATUS -->
+                <div id="statusContainer" runat="server" class="status-label" visible="false">
+                    <asp:Label ID="lblStatus" runat="server" />
                 </div>
             </div>
         </div>
@@ -194,7 +365,18 @@
             CancelControlID="btnMessageOk" />
 
         <script type="text/javascript">
-            // AutoComplete setup for GL Code search
+            // SNACKBAR FUNCTION
+            function showSnackbar(message, type) {
+                var snackbar = document.getElementById("snackbar");
+                snackbar.textContent = message;
+                snackbar.className = "snackbar snackbar-" + type;
+                snackbar.classList.add("show");
+                setTimeout(function () {
+                    snackbar.className = "snackbar";
+                }, 3000);
+            }
+
+            // AutoComplete setup for single form GL Code search
             function setupGLAutoComplete() {
                 $('#<%= txtGLCode.ClientID %>').autocomplete({
                     source: function (request, response) {
@@ -231,17 +413,115 @@
                 });
             }
 
+            // AutoComplete for grid rows
+            function setupGridAutoComplete(elementId, rowIndex) {
+                $('#' + elementId).autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            type: "POST",
+                            url: "payable_sl_type.aspx/SearchGLCodes",
+                            data: JSON.stringify({ searchTerm: request.term }),
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: function (data) {
+                                response($.map(data.d, function (item) {
+                                    return {
+                                        label: item.GL_CODE + " - " + item.GL_DESCRP,
+                                        value: item.GL_CODE,
+                                        desc: item.GL_DESCRP,
+                                        family: item.FAMILY
+                                    };
+                                }));
+                            },
+                            error: function (xhr, status, error) {
+                                console.log("Search Error: " + error);
+                            }
+                        });
+                    },
+                    minLength: 2,
+                    select: function (event, ui) {
+                        var glCodeInput = $('#' + elementId);
+                        var row = glCodeInput.closest('tr');
+                        glCodeInput.val(ui.item.value);
+                        row.find('.readonly-field[id*="txtGLDesc"]').val(ui.item.desc);
+                        row.find('.readonly-field[id*="txtFamily"]').val(ui.item.family);
+                        row.find('.hf-glcode').val(ui.item.value);
+                        return false;
+                    }
+                });
+            }
+
+            // Update auto-generated IDs for grid rows
+            function updateAutoIds() {
+                var grid = document.getElementById('<%= gvBulkSL.ClientID %>');
+                var startId = <%= GetNextAvailableId() %>;
+                
+                for (var i = 1; i < grid.rows.length; i++) {
+                    var row = grid.rows[i];
+                    var autoIdLabel = row.querySelector('.auto-id');
+                    if (autoIdLabel) {
+                        autoIdLabel.textContent = startId + (i - 1);
+                    }
+                }
+            }
+
+            // Add new row to grid
+            function addGridRow() {
+                var grid = document.getElementById('<%= gvBulkSL.ClientID %>');
+                var tbody = grid.tBodies[0];
+                var lastRow = tbody.rows[tbody.rows.length - 1];
+                var newRow = lastRow.cloneNode(true);
+                
+                $(newRow).find('input[type="text"]').val('');
+                $(newRow).find('.readonly-field').val('');
+                $(newRow).find('.hf-glcode').val('');
+                
+                var autoIdLabel = newRow.querySelector('.auto-id');
+                if (autoIdLabel) {
+                    autoIdLabel.textContent = '';
+                }
+                
+                var rowCount = tbody.rows.length;
+                $(newRow).find('input, .auto-id').each(function() {
+                    var oldId = this.id;
+                    if (oldId) {
+                        this.id = oldId + '_' + rowCount;
+                    }
+                });
+                
+                tbody.appendChild(newRow);
+                updateAutoIds();
+                
+                var newGlCodeInput = $(newRow).find('.glcode-input')[0];
+                if (newGlCodeInput && newGlCodeInput.id) {
+                    setupGridAutoComplete(newGlCodeInput.id, rowCount);
+                }
+            }
+
+            // Remove row from grid
+            function removeGridRow(btn) {
+                var grid = document.getElementById('<%= gvBulkSL.ClientID %>');
+                var tbody = grid.tBodies[0];
+                if (tbody.rows.length <= 1) {
+                    showSnackbar('At least one row is required', 'error');
+                    return;
+                }
+                var row = btn.parentNode.parentNode;
+                tbody.removeChild(row);
+                updateAutoIds();
+            }
+
             function validateForm() {
                 var glCode = $('#<%= txtGLCode.ClientID %>').val().trim();
                 if (glCode === '') {
-                    alert('Please select a GL Code');
+                    showSnackbar('Please select a GL Code', 'error');
                     $('#<%= txtGLCode.ClientID %>').focus();
                     return false;
                 }
 
                 var description = $('#<%= txtDescription.ClientID %>').val().trim();
                 if (description === '') {
-                    alert('Please enter GL SL Description');
+                    showSnackbar('Please enter GL SL Description', 'error');
                     $('#<%= txtDescription.ClientID %>').focus();
                     return false;
                 }
@@ -251,6 +531,13 @@
 
             $(document).ready(function () {
                 setupGLAutoComplete();
+                updateAutoIds();
+                
+                $('.glcode-input').each(function() {
+                    if (this.id) {
+                        setupGridAutoComplete(this.id, 0);
+                    }
+                });
 
                 $('#<%= btnSave.ClientID %>').on('click', function (e) {
                     if (!validateForm()) {
@@ -264,6 +551,12 @@
             if (prm) {
                 prm.add_endRequest(function () {
                     setupGLAutoComplete();
+                    updateAutoIds();
+                    $('.glcode-input').each(function() {
+                        if (this.id) {
+                            setupGridAutoComplete(this.id, 0);
+                        }
+                    });
                 });
             }
         </script>

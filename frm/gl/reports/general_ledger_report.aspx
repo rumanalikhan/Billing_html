@@ -82,6 +82,16 @@
             margin-top: 5px;
         }
 
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 11px;
+            color: #555;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+
         .report-period {
             text-align: center;
             font-size: 12px;
@@ -222,6 +232,15 @@
             border-left: 3px solid #0f7c57;
         }
 
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
         @media print {
             body {
                 background: white;
@@ -271,26 +290,50 @@
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+
+            .footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
         }
     </style>
+    <script type="text/javascript">
+        function displayPageNumbers() {
+            var pageNumber = document.getElementById('pageNumber');
+            var totalPages = document.getElementById('totalPages');
+            if (pageNumber && totalPages) {
+                pageNumber.innerText = '1';
+                totalPages.innerText = '1';
+            }
+        }
+        window.onload = displayPageNumbers;
+    </script>
 </head>
 <body>
     <form id="form1" runat="server">
         <!-- Header like Chart of Accounts -->
-        <div class="no-print">
-            <div class="header-container">
-                <h1>General Ledger Report</h1>
-                <div class="button-group">
-                    <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print Report" CssClass="print-btn" OnClientClick="window.print();return false;" />
-                    <asp:Button ID="btnBack" runat="server" Text="< Go Back" CssClass="back-btn" OnClick="btnBack_Click" />
-                </div>
-            </div>
+       <div class="no-print">
+    <div class="header-container">
+        <h1>General Ledger Report</h1>
+        <div class="button-group">
+            <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print Report" CssClass="print-btn" OnClientClick="window.print();return false;" />
+            <asp:Button ID="btnExcel" runat="server" Text="📊 Export Excel" CssClass="print-btn" OnClick="btnExcel_Click" />
+            <asp:Button ID="btnBack" runat="server" Text="< Go Back" CssClass="back-btn" OnClick="btnBack_Click" />
         </div>
+    </div>
+</div>
 
         <div class="report-container">
             <div class="company-header">
                 <div class="company-name">BAHRIA TOWN KARACHI</div>
                 <div class="company-sub">GL ACCOUNTING SYSTEM</div>
+            </div>
+
+            <!-- Report Header with Date/Time -->
+            <div class="report-header">
+                <div>General Ledger Report</div>
+                <div><asp:Label ID="lblReportDateTime" runat="server" /></div>
             </div>
 
             <div class="filter-section no-print">
@@ -343,6 +386,12 @@
                         </asp:TemplateField>
                     </Columns>
                 </asp:GridView>
+            </div>
+
+            <!-- Footer with Page Number -->
+            <div class="footer">
+                This is a computer generated document - No signature required<br />
+                Page 1 of 1
             </div>
 
             <div class="status no-print">

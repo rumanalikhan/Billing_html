@@ -298,25 +298,25 @@
                             <i class="fas fa-book"></i>
                             <span>Journal General</span>
                         </asp:LinkButton>
-                        
-                        <asp:LinkButton ID="btnAuditTrial" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">
-                            <i class="fas fa-search-dollar"></i>
-                            <span>Audit Trial</span>
-                        </asp:LinkButton>
-                        
+
                         <asp:LinkButton ID="btnJournalGeneralSub" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">
                             <i class="fas fa-book-open"></i>
                             <span>Journal General Sub Ledger</span>
                         </asp:LinkButton>
                         
-                        <asp:LinkButton ID="btnTrialBalance" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">
+                        <asp:LinkButton ID="btnAuditTrial" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click" Visible = false >
+                            <i class="fas fa-search-dollar"></i>
+                            <span>Audit Trial</span>
+                        </asp:LinkButton>
+                        
+                        <asp:LinkButton ID="btnTrialBalance" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click" >
                             <i class="fas fa-balance-scale"></i>
                             <span>Trial Balance</span>
                         </asp:LinkButton>
                         
-                        <asp:LinkButton ID="btnTrialBalanceSub" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click">
+                        <asp:LinkButton ID="btnTrialBalanceSub" runat="server" CssClass="menu-item reporting-item" OnClick="ReportingMenuItem_Click" Visible = false>
                             <i class="fas fa-balance-scale-left"></i>
-                            <span>Trial Balance Sub Ledger</span>
+                            <span>Client Trial Balance</span>
                         </asp:LinkButton>
                     </div>
                 </div>

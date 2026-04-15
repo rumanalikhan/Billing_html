@@ -655,6 +655,9 @@
                             <asp:DropDownList ID="ddlBookType" runat="server" Width="220px"
                                 DataTextField="BOOK_TYPE" DataValueField="GL_CODE"
                                 AutoPostBack="true" OnSelectedIndexChanged="ddlBookType_SelectedIndexChanged" />
+                            <asp:LinkButton ID="lblAddSL" runat="server" Font-Bold="true" Text="+"
+                                OnClick="btnSL_Click"
+                                Style="color: black; font-size: 20px; text-decoration: none;" />
                         </td>
                         <td class="header-label">GRV:</td>
                         <td class="header-value">

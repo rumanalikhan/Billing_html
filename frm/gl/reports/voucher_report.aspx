@@ -202,10 +202,13 @@
     <form id="form1" runat="server">
         <div class="no-print header-container">
             <h1 style="margin: 0;">Voucher Print</h1>
-            <div class="button-group">
-                <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print" CssClass="print-btn" OnClientClick="window.print();return false;" />
-                <asp:Button ID="btnClose" runat="server" Text="✖ Close" CssClass="close-btn" OnClick="btnClose_Click" />
-            </div>
+            <div class="no-print header-container">
+    <div class="button-group">
+        <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print" CssClass="print-btn" OnClientClick="window.print();return false;" />
+        <asp:Button ID="btnExportExcel" runat="server" Text="📊 Excel" CssClass="print-btn" OnClick="btnExportExcel_Click" />
+        <asp:Button ID="btnClose" runat="server" Text="✖ Close" CssClass="close-btn" OnClick="btnClose_Click" />
+    </div>
+</div>
         </div>
 
         <div class="voucher-box">

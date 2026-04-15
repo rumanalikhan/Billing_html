@@ -55,7 +55,12 @@ public partial class GL_Receipt_Voucher : System.Web.UI.Page
         Session.Abandon();
         Response.Redirect("~/login/Login.aspx", false);
     }
-
+    protected void btnSL_Click(object sender, EventArgs e)
+    {
+        Session.Clear();
+        Session.Abandon();
+        Response.Redirect("~/frm/gl/setup/receivable_sl_type.aspx");
+    }
     protected void btnPrint_Click(object sender, EventArgs e)
     {
         try

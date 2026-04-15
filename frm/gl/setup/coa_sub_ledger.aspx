@@ -20,6 +20,40 @@
             background-color: #f4f6f8;
         }
 
+        /* SNACKBAR STYLES - ADD THIS */
+        .snackbar {
+            visibility: hidden;
+            min-width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 12px 20px;
+            position: fixed;
+            z-index: 10000;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .snackbar.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        .snackbar-success { background-color: #28a745; }
+        .snackbar-error { background-color: #dc3545; }
+        .snackbar-info { background-color: #17a2b8; }
+        @keyframes fadein {
+            from { bottom: 0; opacity: 0; }
+            to { bottom: 30px; opacity: 1; }
+        }
+        @keyframes fadeout {
+            from { bottom: 30px; opacity: 1; }
+            to { bottom: 0; opacity: 0; }
+        }
+
         .container {
             display: flex;
             height: 100vh;
@@ -355,14 +389,14 @@
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server" />
 
+        <!-- SNACKBAR CONTAINER - ADD THIS -->
+        <div id="snackbar" class="snackbar"></div>
+
         <!-- HEADER -->
         <div id="border_header" class="header-border"></div>
         <header>
             <div style="font-weight: bold; font-size: 18px;">Sub Ledger</div>
             <div style="margin-left: auto; display: flex; gap: 10px;">
-                <%--<asp:LinkButton ID="btnGoBack" runat="server" CssClass="header-btns" OnClick="btnGoBack_Click">Go Back</asp:LinkButton>
-                <asp:Label ID="lblUser" runat="server" ForeColor="Blue" Font-Bold="true" />
-                <asp:LinkButton ID="btnLogoff" runat="server" CssClass="header-btns" OnClick="btnLogoff_Click">Log off</asp:LinkButton>--%>
                 <asp:LinkButton ID="btnGoBack" runat="server"
                     CssClass="header-btns"
                     OnClick="btnGoBack_Click"
@@ -440,7 +474,7 @@
                         <label>SL Code <span style="color: red;">*</span></label>
                         <asp:TextBox ID="txtSLCode" runat="server" CssClass="asp-input" MaxLength="15" />
 
-                        <label>Description</label>
+                        <label>Description <span style="color: red;">*</span></label>
                         <asp:TextBox ID="txtDescrip" runat="server" CssClass="asp-input" MaxLength="100" />
 
                         <label>Contact Person</label>
@@ -511,11 +545,8 @@
                     </div>
 
                     <!-- Validator -->
-                    <div class="validator-cell">
-                        <asp:RequiredFieldValidator ID="rfvSLCode" runat="server"
-                            ControlToValidate="txtSLCode" ErrorMessage="SL Code is required"
-                            ForeColor="Red" Display="Dynamic" />
-                    </div>
+<div class="validator-cell" style="display:none;">
+</div>
 
                     <!-- BUTTONS -->
                     <div class="button-group">
@@ -548,6 +579,17 @@
             CancelControlID="btnMessageOk" />
 
         <script type="text/javascript">
+            // SNACKBAR FUNCTION - ADD THIS
+            function showSnackbar(message, type) {
+                var snackbar = document.getElementById("snackbar");
+                snackbar.textContent = message;
+                snackbar.className = "snackbar snackbar-" + type;
+                snackbar.classList.add("show");
+                setTimeout(function () {
+                    snackbar.className = "snackbar";
+                }, 3000);
+            }
+
             function setupGLSLTypeAutoComplete() {
                 $('#<%= txtSearchGLSL.ClientID %>').autocomplete({
                     source: function (request, response) {
@@ -583,42 +625,139 @@
                 });
             }
 
+            // UPDATED VALIDATION WITH ALL FIELD VALIDATIONS
             function validateForm() {
-                var slCode = $('#<%= txtSLCode.ClientID %>').val().trim();
-                if (slCode === '') {
-                    alert('SL Code is required');
-                    $('#<%= txtSLCode.ClientID %>').focus();
-                    return false;
-                }
+                var glslId = $('#<%= hfSubLedgerId.ClientID %>').val();
+    if (glslId === '' || glslId === '0') {
+        showSnackbar('Please select a GL SL Type first', 'error');
+        return false;
+    }
 
-                var email1 = $('#<%= txtEmail1.ClientID %>').val().trim();
-                if (email1 !== '') {
-                    var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                    if (!emailPattern.test(email1)) {
-                        alert('Please enter a valid email address in Email 1');
-                        $('#<%= txtEmail1.ClientID %>').focus();
-                        return false;
-                    }
-                }
+    var slCode = $('#<%= txtSLCode.ClientID %>').val().trim();
+    if (slCode === '') {
+        showSnackbar('SL Code is required', 'error');
+        $('#<%= txtSLCode.ClientID %>').focus();
+        return false;
+    }
+    if (slCode.length < 2) {
+        showSnackbar('SL Code must be at least 2 characters', 'error');
+        $('#<%= txtSLCode.ClientID %>').focus();
+        return false;
+    }
+    if (slCode.length > 15) {
+        showSnackbar('SL Code must not exceed 15 characters', 'error');
+        $('#<%= txtSLCode.ClientID %>').focus();
+        return false;
+    }
 
-                var email2 = $('#<%= txtEmail2.ClientID %>').val().trim();
-                if (email2 !== '') {
-                    if (!emailPattern.test(email2)) {
-                        alert('Please enter a valid email address in Email 2');
-                        $('#<%= txtEmail2.ClientID %>').focus();
-                        return false;
-                    }
-                }
+    var description = $('#<%= txtDescrip.ClientID %>').val().trim();
+    if (description === '') {
+        showSnackbar('Description is required', 'error');
+        $('#<%= txtDescrip.ClientID %>').focus();
+        return false;
+    }
 
-                var openingBalance = $('#<%= txtOpeningBalance.ClientID %>').val().trim();
-                if (openingBalance !== '' && isNaN(parseFloat(openingBalance))) {
-                    alert('Please enter a valid number for Opening Balance');
-                    $('#<%= txtOpeningBalance.ClientID %>').focus();
-                    return false;
-                }
+    // Phone number validations (Cell #1, Cell #2, Contact #1, Contact #2, Contact #3, Fax #1, Fax #2)
+    var phoneFields = [
+        { id: '<%= txtCell1.ClientID %>', name: 'Cell #1' },
+        { id: '<%= txtCell2.ClientID %>', name: 'Cell #2' },
+        { id: '<%= txtContact1.ClientID %>', name: 'Contact #1' },
+        { id: '<%= txtContact2.ClientID %>', name: 'Contact #2' },
+        { id: '<%= txtContact3.ClientID %>', name: 'Contact #3' },
+        { id: '<%= txtFax1.ClientID %>', name: 'Fax #1' },
+        { id: '<%= txtFax2.ClientID %>', name: 'Fax #2' }
+    ];
 
-                return true;
-            }
+    var phonePattern = /^[0-9+\-\s\(\)]{8,20}$/;
+    for (var i = 0; i < phoneFields.length; i++) {
+        var phoneValue = $('#' + phoneFields[i].id).val().trim();
+        if (phoneValue !== '' && !phonePattern.test(phoneValue)) {
+            showSnackbar('Please enter a valid ' + phoneFields[i].name + ' (numbers, +, -, spaces only, 8-20 digits)', 'error');
+            $('#' + phoneFields[i].id).focus();
+            return false;
+        }
+    }
+
+    // Email validations
+    var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    var email1 = $('#<%= txtEmail1.ClientID %>').val().trim();
+    if (email1 !== '' && !emailPattern.test(email1)) {
+        showSnackbar('Please enter a valid email address in Email 1', 'error');
+        $('#<%= txtEmail1.ClientID %>').focus();
+        return false;
+    }
+
+    var email2 = $('#<%= txtEmail2.ClientID %>').val().trim();
+    if (email2 !== '' && !emailPattern.test(email2)) {
+        showSnackbar('Please enter a valid email address in Email 2', 'error');
+        $('#<%= txtEmail2.ClientID %>').focus();
+        return false;
+    }
+
+    // URL validation
+    var url = $('#<%= txtURL.ClientID %>').val().trim();
+    if (url !== '') {
+        var urlPattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[a-zA-Z0-9-._~:\/?#\[\]@!$&'()*+,;=]*)?$/;
+        if (!urlPattern.test(url)) {
+            showSnackbar('Please enter a valid URL (e.g., https://example.com)', 'error');
+            $('#<%= txtURL.ClientID %>').focus();
+            return false;
+        }
+    }
+
+    // NTN validation (numbers and hyphens only)
+    var ntn = $('#<%= txtNTN.ClientID %>').val().trim();
+    if (ntn !== '') {
+        var ntnPattern = /^[0-9-]+$/;
+        if (!ntnPattern.test(ntn)) {
+            showSnackbar('NTN should contain only numbers and hyphens', 'error');
+            $('#<%= txtNTN.ClientID %>').focus();
+            return false;
+        }
+    }
+
+    // STN validation (numbers and hyphens only)
+    var stn = $('#<%= txtSTN.ClientID %>').val().trim();
+    if (stn !== '') {
+        var stnPattern = /^[0-9-]+$/;
+        if (!stnPattern.test(stn)) {
+            showSnackbar('STN should contain only numbers and hyphens', 'error');
+            $('#<%= txtSTN.ClientID %>').focus();
+            return false;
+        }
+    }
+
+    // Contact Person validation (letters and spaces only)
+    var contactPerson = $('#<%= txtContactPerson.ClientID %>').val().trim();
+    if (contactPerson !== '') {
+        var namePattern = /^[a-zA-Z\s]+$/;
+        if (!namePattern.test(contactPerson)) {
+            showSnackbar('Contact Person should contain only letters and spaces', 'error');
+            $('#<%= txtContactPerson.ClientID %>').focus();
+            return false;
+        }
+    }
+
+    // City validation (letters and spaces only)
+    var city = $('#<%= txtCity.ClientID %>').val().trim();
+    if (city !== '') {
+        var cityPattern = /^[a-zA-Z\s]+$/;
+        if (!cityPattern.test(city)) {
+            showSnackbar('City should contain only letters and spaces', 'error');
+            $('#<%= txtCity.ClientID %>').focus();
+            return false;
+        }
+    }
+
+    var openingBalance = $('#<%= txtOpeningBalance.ClientID %>').val().trim();
+    if (openingBalance !== '' && isNaN(parseFloat(openingBalance))) {
+        showSnackbar('Please enter a valid number for Opening Balance', 'error');
+        $('#<%= txtOpeningBalance.ClientID %>').focus();
+        return false;
+    }
+
+    return true;
+}
 
             $(document).ready(function () {
                 setupGLSLTypeAutoComplete();

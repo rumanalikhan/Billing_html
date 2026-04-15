@@ -297,14 +297,35 @@ public partial class coa_sub_legder : System.Web.UI.Page
     {
         if (string.IsNullOrEmpty(hfSubLedgerId.Value) || hfSubLedgerId.Value == "0")
         {
-            ShowMessage("Please select a GL SL Type first");
+            ShowValidationMessage("Please select a GL SL Type first");
             return false;
         }
 
         if (string.IsNullOrEmpty(txtSLCode.Text.Trim()))
         {
-            ShowMessage("SL Code is required");
+            ShowValidationMessage("SL Code is required");
             txtSLCode.Focus();
+            return false;
+        }
+
+        if (txtSLCode.Text.Trim().Length < 2)
+        {
+            ShowValidationMessage("SL Code must be at least 2 characters");
+            txtSLCode.Focus();
+            return false;
+        }
+
+        if (txtSLCode.Text.Trim().Length > 15)
+        {
+            ShowValidationMessage("SL Code must not exceed 15 characters");
+            txtSLCode.Focus();
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(txtDescrip.Text.Trim()))
+        {
+            ShowValidationMessage("Description is required");
+            txtDescrip.Focus();
             return false;
         }
 
@@ -312,37 +333,141 @@ public partial class coa_sub_legder : System.Web.UI.Page
         {
             if (IsDuplicateSLCode(txtSLCode.Text.Trim()))
             {
-                ShowMessage("SL Code already exists. Please use a different code.");
+                ShowValidationMessage("SL Code already exists. Please use a different code.");
                 txtSLCode.Focus();
                 return false;
             }
         }
 
+        // Validate phone numbers
+        System.Text.RegularExpressions.Regex phoneRegex = new System.Text.RegularExpressions.Regex(@"^[0-9+\-\s\(\)]{8,20}$");
+
+        if (!string.IsNullOrEmpty(txtCell1.Text.Trim()) && !phoneRegex.IsMatch(txtCell1.Text.Trim()))
+        {
+            ShowValidationMessage("Please enter a valid Cell #1 (numbers, +, -, spaces only, 8-20 digits)");
+            txtCell1.Focus();
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(txtCell2.Text.Trim()) && !phoneRegex.IsMatch(txtCell2.Text.Trim()))
+        {
+            ShowValidationMessage("Please enter a valid Cell #2 (numbers, +, -, spaces only, 8-20 digits)");
+            txtCell2.Focus();
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(txtContact1.Text.Trim()) && !phoneRegex.IsMatch(txtContact1.Text.Trim()))
+        {
+            ShowValidationMessage("Please enter a valid Contact #1 (numbers, +, -, spaces only, 8-20 digits)");
+            txtContact1.Focus();
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(txtContact2.Text.Trim()) && !phoneRegex.IsMatch(txtContact2.Text.Trim()))
+        {
+            ShowValidationMessage("Please enter a valid Contact #2 (numbers, +, -, spaces only, 8-20 digits)");
+            txtContact2.Focus();
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(txtContact3.Text.Trim()) && !phoneRegex.IsMatch(txtContact3.Text.Trim()))
+        {
+            ShowValidationMessage("Please enter a valid Contact #3 (numbers, +, -, spaces only, 8-20 digits)");
+            txtContact3.Focus();
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(txtFax1.Text.Trim()) && !phoneRegex.IsMatch(txtFax1.Text.Trim()))
+        {
+            ShowValidationMessage("Please enter a valid Fax #1 (numbers, +, -, spaces only, 8-20 digits)");
+            txtFax1.Focus();
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(txtFax2.Text.Trim()) && !phoneRegex.IsMatch(txtFax2.Text.Trim()))
+        {
+            ShowValidationMessage("Please enter a valid Fax #2 (numbers, +, -, spaces only, 8-20 digits)");
+            txtFax2.Focus();
+            return false;
+        }
+
+        // Validate NTN
+        System.Text.RegularExpressions.Regex ntnRegex = new System.Text.RegularExpressions.Regex(@"^[0-9-]+$");
+        if (!string.IsNullOrEmpty(txtNTN.Text.Trim()) && !ntnRegex.IsMatch(txtNTN.Text.Trim()))
+        {
+            ShowValidationMessage("NTN should contain only numbers and hyphens");
+            txtNTN.Focus();
+            return false;
+        }
+
+        // Validate STN
+        if (!string.IsNullOrEmpty(txtSTN.Text.Trim()) && !ntnRegex.IsMatch(txtSTN.Text.Trim()))
+        {
+            ShowValidationMessage("STN should contain only numbers and hyphens");
+            txtSTN.Focus();
+            return false;
+        }
+
+        // Validate Contact Person
+        System.Text.RegularExpressions.Regex nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z\s]+$");
+        if (!string.IsNullOrEmpty(txtContactPerson.Text.Trim()) && !nameRegex.IsMatch(txtContactPerson.Text.Trim()))
+        {
+            ShowValidationMessage("Contact Person should contain only letters and spaces");
+            txtContactPerson.Focus();
+            return false;
+        }
+
+        // Validate City
+        if (!string.IsNullOrEmpty(txtCity.Text.Trim()) && !nameRegex.IsMatch(txtCity.Text.Trim()))
+        {
+            ShowValidationMessage("City should contain only letters and spaces");
+            txtCity.Focus();
+            return false;
+        }
+
+        // Validate Email
         if (!string.IsNullOrEmpty(txtEmail1.Text.Trim()) && !IsValidEmail(txtEmail1.Text.Trim()))
         {
-            ShowMessage("Please enter a valid email address in Email 1");
+            ShowValidationMessage("Please enter a valid email address in Email 1");
             txtEmail1.Focus();
             return false;
         }
 
         if (!string.IsNullOrEmpty(txtEmail2.Text.Trim()) && !IsValidEmail(txtEmail2.Text.Trim()))
         {
-            ShowMessage("Please enter a valid email address in Email 2");
+            ShowValidationMessage("Please enter a valid email address in Email 2");
             txtEmail2.Focus();
             return false;
+        }
+
+        // Validate URL
+        if (!string.IsNullOrEmpty(txtURL.Text.Trim()))
+        {
+            System.Text.RegularExpressions.Regex urlRegex = new System.Text.RegularExpressions.Regex(@"^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[a-zA-Z0-9-._~:\/?#\[\]@!$&'()*+,;=]*)?$");
+            if (!urlRegex.IsMatch(txtURL.Text.Trim()))
+            {
+                ShowValidationMessage("Please enter a valid URL (e.g., https://example.com)");
+                txtURL.Focus();
+                return false;
+            }
         }
 
         decimal openingBalance;
         if (!decimal.TryParse(txtOpeningBalance.Text, out openingBalance))
         {
-            ShowMessage("Please enter a valid number for Opening Balance");
+            ShowValidationMessage("Please enter a valid number for Opening Balance");
             txtOpeningBalance.Focus();
             return false;
         }
 
         return true;
     }
-
+    private void ShowValidationMessage(string message)
+    {
+        // Only show snackbar, no status label
+        string script = "showSnackbar('" + message.Replace("'", "\\'") + "', 'error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), "ValidationMessage", script, true);
+    }
     private bool IsDuplicateSLCode(string slCode)
     {
         using (OracleConnection conn = new OracleConnection(connectionString))
@@ -416,22 +541,26 @@ public partial class coa_sub_legder : System.Web.UI.Page
         ClearForm();
     }
 
-    private void ShowMessage(string message)
-    {
-        lblMessage.Text = message;
-        mpeMessage.Show();
-    }
-
     protected void btnMessageOk_Click(object sender, EventArgs e)
     {
         mpeMessage.Hide();
+    }
+    private void ShowMessage(string message)
+    {
+        // Use snackbar instead of modal popup
+        string script = "showSnackbar('" + message.Replace("'", "\\'") + "', 'error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), "ShowMessage", script, true);
     }
 
     private void ShowStatus(string message, string type)
     {
         lblStatus.Text = message;
-        statusContainer.Visible = true;
-        statusContainer.Attributes["class"] = "status-label " + (type == "success" ? "status-success" : "status-error");
+        statusContainer.Visible = false;  // Keep this false to hide status label
+        statusContainer.Attributes["class"] = "status-msg status-" + type;
+
+        // Also show snackbar for success messages
+        string script = "showSnackbar('" + message.Replace("'", "\\'") + "', '" + type + "');";
+        ScriptManager.RegisterStartupScript(this, GetType(), "ShowStatus", script, true);
     }
 
     private int GetCurrentLogId()

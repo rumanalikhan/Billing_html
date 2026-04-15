@@ -25,39 +25,39 @@
         }
 
         /* HEADER - Full Width */
-        header { 
-            position: sticky; 
-            top: 0; 
-            background: #fff; 
-            border-bottom: 1px solid #e5e7eb; 
-            padding: 12px 20px; 
+        header {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 20px;
             margin: 0;
-            display: flex; 
-            gap: 12px; 
-            align-items: center; 
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
 
-        .header-btns { 
-            background-color: black; 
-            color: white !important; 
-            border: none; 
-            padding: 8px 16px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            transition: background-color 0.2s ease-in-out; 
-            text-decoration: none !important; 
-            display: inline-block; 
+        .header-btns {
+            background-color: black;
+            color: white !important;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s ease-in-out;
+            text-decoration: none !important;
+            display: inline-block;
         }
 
-        .header-btns:hover { 
-            background-color: #333; 
-        }
+            .header-btns:hover {
+                background-color: #333;
+            }
 
-        .header-border { 
-            border-top: 30px solid #000; 
-            width: 100%; 
-            margin-bottom: 0; 
+        .header-border {
+            border-top: 30px solid #000;
+            width: 100%;
+            margin-bottom: 0;
         }
 
         /* ===== MAIN CONTAINER - Full Width ===== */
@@ -108,32 +108,72 @@
             min-width: 40px;
         }
 
-        .icon-btn:hover {
-            transform: scale(1.1);
-            background-color: rgba(0,0,0,0.02);
+            .icon-btn:hover {
+                transform: scale(1.1);
+                background-color: rgba(0,0,0,0.02);
+            }
+
+        .copy-btn {
+            color: #2196F3;
         }
 
-        .copy-btn { color: #2196F3; }
-        .post-btn { color: #4f9c52; }
-        .unpost-btn { color: #d44339; }
-        .save-btn { color: #0f7c57; }
-        .clear-btn { color: #d78204; }
-        .nav-btn { color: #2196F3; }
-        
+        .post-btn {
+            color: #4f9c52;
+        }
+
+        .unpost-btn {
+            color: #d44339;
+        }
+
+        .save-btn {
+            color: #0f7c57;
+        }
+
+        .clear-btn {
+            color: #d78204;
+        }
+
+        .nav-btn {
+            color: #2196F3;
+        }
+
         .add-btn {
             color: #0f7c57;
             font-size: 16px;
             padding: 8px 16px;
         }
-        .add-btn i { margin-right: 5px; }
 
-        .copy-btn:hover { color: #1976D2; }
-        .post-btn:hover { color: #388E3C; }
-        .unpost-btn:hover { color: #d32f2f; }
-        .save-btn:hover { color: #0f7c57; }
-        .clear-btn:hover { color: #f57c00; }
-        .nav-btn:hover { color: #3187dc; }
-        .add-btn:hover { color: #2d6a2d; }
+            .add-btn i {
+                margin-right: 5px;
+            }
+
+        .copy-btn:hover {
+            color: #1976D2;
+        }
+
+        .post-btn:hover {
+            color: #388E3C;
+        }
+
+        .unpost-btn:hover {
+            color: #d32f2f;
+        }
+
+        .save-btn:hover {
+            color: #0f7c57;
+        }
+
+        .clear-btn:hover {
+            color: #f57c00;
+        }
+
+        .nav-btn:hover {
+            color: #3187dc;
+        }
+
+        .add-btn:hover {
+            color: #2d6a2d;
+        }
 
         /* ===== VOUCHER HEADER ===== */
         .voucher-header {
@@ -145,14 +185,14 @@
             flex-shrink: 0;
         }
 
-        .voucher-header table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+            .voucher-header table {
+                width: 100%;
+                border-collapse: collapse;
+            }
 
-        .voucher-header td {
-            padding: 5px;
-        }
+            .voucher-header td {
+                padding: 5px;
+            }
 
         .header-label {
             font-weight: bold;
@@ -193,69 +233,98 @@
             table-layout: fixed;
         }
 
-        .gridview-style th {
-            background-color: #0f7c57;
-            color: white;
-            padding: 10px 5px;
-            text-align: left;
-            white-space: nowrap;
-            font-weight: bold;
-            border: 1px solid #45a049;
-        }
+            .gridview-style th {
+                background-color: #0f7c57;
+                color: white;
+                padding: 10px 5px;
+                text-align: left;
+                white-space: nowrap;
+                font-weight: bold;
+                border: 1px solid #45a049;
+            }
 
-        .gridview-style td {
-            padding: 5px;
-            border: 1px solid #ddd;
-            background-color: white;
-        }
+            .gridview-style td {
+                padding: 5px;
+                border: 1px solid #ddd;
+                background-color: white;
+            }
 
-        .gridview-style tr:nth-child(even) td {
-            background-color: #f9f9f9;
-        }
+            .gridview-style tr:nth-child(even) td {
+                background-color: #f9f9f9;
+            }
 
-        .gridview-style tr:hover td {
-            background-color: #f5f5f5;
-        }
+            .gridview-style tr:hover td {
+                background-color: #f5f5f5;
+            }
 
-        .gridview-style input[type="text"] {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 6px 4px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 12px;
-        }
+            .gridview-style input[type="text"] {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 6px 4px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                font-size: 12px;
+            }
 
-        .gridview-style input[type="text"]:focus {
-            border-color: #0f7c57;
-            outline: none;
-            box-shadow: 0 0 3px #0f7c57;
-        }
+                .gridview-style input[type="text"]:focus {
+                    border-color: #0f7c57;
+                    outline: none;
+                    box-shadow: 0 0 3px #0f7c57;
+                }
 
-        .gridview-style tfoot tr {
-            position: sticky;
-            bottom: 0;
-            background-color: #e6e6e6;
-            z-index: 10;
-        }
+            .gridview-style tfoot tr {
+                position: sticky;
+                bottom: 0;
+                background-color: #e6e6e6;
+                z-index: 10;
+            }
 
-        .gridview-style tfoot td {
-            background-color: #e6e6e6;
-            font-weight: bold;
-            border-top: 2px solid #999;
-        }
+            .gridview-style tfoot td {
+                background-color: #e6e6e6;
+                font-weight: bold;
+                border-top: 2px solid #999;
+            }
 
         /* Column widths */
-        .col-gl-code { width: 80px; }
-        .col-gl-type { width: 90px; }
-        .col-sl-code { width: 80px; }
-        .col-sl-type { width: 60px; }
-        .col-narration { width: 120px; }
-        .col-bill { width: 100px; }
-        .col-cheque { width: 100px; }
-        .col-amount { width: 100px; }
-        .col-cost { width: 80px; }
-        .col-action { width: 20px; }
+        .col-gl-code {
+            width: 80px;
+        }
+
+        .col-gl-type {
+            width: 90px;
+        }
+
+        .col-sl-code {
+            width: 80px;
+        }
+
+        .col-sl-type {
+            width: 60px;
+        }
+
+        .col-narration {
+            width: 120px;
+        }
+
+        .col-bill {
+            width: 100px;
+        }
+
+        .col-cheque {
+            width: 100px;
+        }
+
+        .col-amount {
+            width: 100px;
+        }
+
+        .col-cost {
+            width: 80px;
+        }
+
+        .col-action {
+            width: 20px;
+        }
 
         /* Grid action icons */
         .grid-icon {
@@ -272,8 +341,14 @@
             justify-content: center;
         }
 
-        .delete-icon { color: #f44336; }
-        .delete-icon:hover { color: #d32f2f; transform: scale(1.2); }
+        .delete-icon {
+            color: #f44336;
+        }
+
+            .delete-icon:hover {
+                color: #d32f2f;
+                transform: scale(1.2);
+            }
 
         /* ===== STATUS LABELS ===== */
         .status-posted {
@@ -323,7 +398,10 @@
             font-weight: bold;
             display: inline-block;
         }
-        .print-btn:hover { color: #721c24; }
+
+            .print-btn:hover {
+                color: #721c24;
+            }
 
         /* ===== AUTOCOMPLETE ===== */
         .ui-autocomplete {
@@ -337,18 +415,20 @@
             background: white;
         }
 
-        .ui-autocomplete .ui-menu-item {
-            padding: 5px 10px;
-            border-bottom: 1px solid #eee;
-        }
+            .ui-autocomplete .ui-menu-item {
+                padding: 5px 10px;
+                border-bottom: 1px solid #eee;
+            }
 
-        .ui-autocomplete .ui-menu-item:hover {
-            background-color: #0f7c57;
-            color: white;
-            cursor: pointer;
-        }
+                .ui-autocomplete .ui-menu-item:hover {
+                    background-color: #0f7c57;
+                    color: white;
+                    cursor: pointer;
+                }
 
-        .ui-helper-hidden-accessible { display: none; }
+        .ui-helper-hidden-accessible {
+            display: none;
+        }
 
         /* GL Description field read-only */
         .gl-type-input[readonly] {
@@ -388,7 +468,10 @@
             border-radius: 5px 5px 0 0;
         }
 
-        .modal-body { padding: 15px; }
+        .modal-body {
+            padding: 15px;
+        }
+
         .modal-footer {
             padding: 15px;
             background-color: #f5f5f5;
@@ -397,13 +480,26 @@
         }
 
         /* ===== HEADINGS ===== */
-        h2 { margin: 0 0 15px; color: #333; }
-        h4 { margin: 10px 0 5px; color: #555; }
+        h2 {
+            margin: 0 0 15px;
+            color: #333;
+        }
+
+        h4 {
+            margin: 10px 0 5px;
+            color: #555;
+        }
 
         /* ===== RESPONSIVE ===== */
         @media screen and (max-width: 1400px) {
-            .gridview-style { font-size: 11px; }
-            .gridview-style input[type="text"] { padding: 4px; font-size: 11px; }
+            .gridview-style {
+                font-size: 11px;
+            }
+
+                .gridview-style input[type="text"] {
+                    padding: 4px;
+                    font-size: 11px;
+                }
         }
 
         /* Inline snackbar styles */
@@ -425,28 +521,49 @@
             max-width: 400px;
         }
 
-        .snackbar-inline.show {
-            visibility: visible;
-            animation: fadein 0.3s;
-        }
+            .snackbar-inline.show {
+                visibility: visible;
+                animation: fadein 0.3s;
+            }
 
-        .snackbar-inline.success { background-color: #0f7c57; }
-        .snackbar-inline.error { background-color: #f44336; }
-        .snackbar-inline.warning { background-color: #ff9800; }
-        .snackbar-inline.info { background-color: #2196F3; }
+            .snackbar-inline.success {
+                background-color: #0f7c57;
+            }
 
-        .snackbar-inline .snackbar-close {
-            cursor: pointer;
-            font-weight: bold;
-            margin-left: 15px;
-            padding: 0 5px;
-            opacity: 0.8;
-        }
-        .snackbar-inline .snackbar-close:hover { opacity: 1; }
+            .snackbar-inline.error {
+                background-color: #f44336;
+            }
+
+            .snackbar-inline.warning {
+                background-color: #ff9800;
+            }
+
+            .snackbar-inline.info {
+                background-color: #2196F3;
+            }
+
+            .snackbar-inline .snackbar-close {
+                cursor: pointer;
+                font-weight: bold;
+                margin-left: 15px;
+                padding: 0 5px;
+                opacity: 0.8;
+            }
+
+                .snackbar-inline .snackbar-close:hover {
+                    opacity: 1;
+                }
 
         @keyframes fadein {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
     </style>
     <script type="text/javascript">
@@ -590,8 +707,8 @@
             <!-- HEADER with Black Bar -->
             <div id="border_header" class="header-border"></div>
             <header>
-                <div style="font-weight:bold; font-size:18px;">Cash Payment Voucher</div>
-                <div style="margin-left:auto; display:flex; gap:10px;">
+                <div style="font-weight: bold; font-size: 18px;">Cash Payment Voucher</div>
+                <div style="margin-left: auto; display: flex; gap: 10px;">
                     <asp:LinkButton ID="btnGoBack" runat="server" CssClass="header-btns" OnClick="btnGoBack_Click">Go Back</asp:LinkButton>
                     <asp:Label ID="lblUser" runat="server" ForeColor="Blue" Font-Bold="true" />
                     <asp:LinkButton ID="btnLogoff" runat="server" CssClass="header-btns" OnClick="btnLogoff_Click">Log off</asp:LinkButton>
@@ -660,6 +777,9 @@
                             <asp:DropDownList ID="ddlBookType" runat="server" Width="220px"
                                 DataTextField="BOOK_TYPE" DataValueField="GL_CODE"
                                 AutoPostBack="true" OnSelectedIndexChanged="ddlBookType_SelectedIndexChanged" />
+                            <asp:LinkButton ID="lblAddSL" runat="server" Font-Bold="true" Text="+"
+                                OnClick="btnSL_Click"
+                                Style="color: black; font-size: 20px; text-decoration: none;" />
                         </td>
                         <td class="header-label">CPV:</td>
                         <td class="header-value">

@@ -5,6 +5,7 @@ using System.Web.UI.WebControls;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
 using System.Configuration;
+using System.Web;
 
 public partial class payable_sl_type : System.Web.UI.Page
 {
@@ -26,13 +27,15 @@ public partial class payable_sl_type : System.Web.UI.Page
 
             ClearForm();
             GenerateNewSLId();
+            
+            // Initialize bulk grid with 10 empty rows
+            InitializeBulkGrid();
         }
         else
         {
             string eventTarget = Request.Params["__EVENTTARGET"];
             if (eventTarget == txtGLCode.UniqueID)
             {
-                // Auto-populate family if needed from selected value
                 string glCode = hfSelectedGLCode.Value;
                 if (!string.IsNullOrEmpty(glCode))
                 {
@@ -46,14 +49,14 @@ public partial class payable_sl_type : System.Web.UI.Page
 
     protected void btnGoBack_Click(object sender, EventArgs e)
     {
-        Response.Redirect("~/main_menu/main_menu_gl.aspx");
+        Response.Redirect("~/main_menu/main_menu_gl.aspx", false);
     }
 
     protected void btnLogoff_Click(object sender, EventArgs e)
     {
         Session.Clear();
         Session.Abandon();
-        Response.Redirect("~/login/Login.aspx");
+        Response.Redirect("~/login/Login.aspx", false);
     }
 
     #endregion
@@ -93,6 +96,226 @@ public partial class payable_sl_type : System.Web.UI.Page
         }
 
         return results;
+    }
+
+    [System.Web.Services.WebMethod]
+    public static int GetNextAvailableId()
+    {
+        string connectionString = ConfigurationManager.ConnectionStrings["BackOfficeConnection"].ConnectionString;
+        using (OracleConnection conn = new OracleConnection(connectionString))
+        {
+            string query = "SELECT NVL(MAX(SUB_LEDGER_ID), 0) + 1 FROM GL_SL_TYPE";
+            OracleCommand cmd = new OracleCommand(query, conn);
+            conn.Open();
+            object result = cmd.ExecuteScalar();
+            return result != null ? Convert.ToInt32(result) : 1;
+        }
+    }
+
+    #endregion
+
+    #region Bulk Grid Methods
+
+    private void InitializeBulkGrid()
+    {
+        DataTable dt = new DataTable();
+        dt.Columns.Add("RowId", typeof(int));
+        
+        // Create 10 empty rows
+        for (int i = 0; i < 8; i++)
+        {
+            DataRow row = dt.NewRow();
+            row["RowId"] = i + 1;
+            dt.Rows.Add(row);
+        }
+        
+        gvBulkSL.DataSource = dt;
+        gvBulkSL.DataBind();
+    }
+
+    protected void gvBulkSL_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        if (e.Row.RowType == DataControlRowType.DataRow)
+        {
+            Label lblAutoId = (Label)e.Row.FindControl("lblAutoId");
+            TextBox txtGLCode = (TextBox)e.Row.FindControl("txtGLCode");
+            TextBox txtGLDesc = (TextBox)e.Row.FindControl("txtGLDesc");
+            TextBox txtFamily = (TextBox)e.Row.FindControl("txtFamily");
+            TextBox txtDescription = (TextBox)e.Row.FindControl("txtDescription");
+            HiddenField hfGLCode = (HiddenField)e.Row.FindControl("hfGLCode");
+            HiddenField hfRowIndex = (HiddenField)e.Row.FindControl("hfRowIndex");
+            
+            // Set auto-generated ID
+            int nextId = GetNextAvailableId();
+            if (lblAutoId != null)
+            {
+                lblAutoId.Text = (nextId + e.Row.RowIndex).ToString();
+            }
+            
+            // Set unique IDs for JavaScript
+            if (txtGLCode != null)
+            {
+                txtGLCode.ID = "gridGLCode_" + e.Row.RowIndex;
+                txtGLCode.CssClass = "glcode-input";
+                txtGLCode.Attributes.Add("placeholder", "Search GL Code...");
+                txtGLCode.Attributes.Add("autocomplete", "off");
+            }
+            
+            if (txtGLDesc != null)
+            {
+                txtGLDesc.ID = "gridGLDesc_" + e.Row.RowIndex;
+                txtGLDesc.CssClass = "readonly-field";
+            }
+            
+            if (txtFamily != null)
+            {
+                txtFamily.ID = "gridFamily_" + e.Row.RowIndex;
+                txtFamily.CssClass = "readonly-field";
+            }
+            
+            if (txtDescription != null)
+            {
+                txtDescription.ID = "gridDesc_" + e.Row.RowIndex;
+            }
+            
+            if (hfGLCode != null)
+            {
+                hfGLCode.ID = "hfGLCode_" + e.Row.RowIndex;
+            }
+            
+            if (hfRowIndex != null)
+            {
+                hfRowIndex.Value = e.Row.RowIndex.ToString();
+            }
+        }
+    }
+
+    protected void btnSaveBulk_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            List<BulkSLType> items = new List<BulkSLType>();
+            
+            foreach (GridViewRow row in gvBulkSL.Rows)
+            {
+                TextBox txtGLCode = (TextBox)row.FindControl("txtGLCode");
+                TextBox txtDescription = (TextBox)row.FindControl("txtDescription");
+                
+                if (txtGLCode != null && txtDescription != null)
+                {
+                    string glCode = txtGLCode.Text.Trim();
+                    string description = txtDescription.Text.Trim();
+                    
+                    if (!string.IsNullOrEmpty(glCode) && !string.IsNullOrEmpty(description))
+                    {
+                        items.Add(new BulkSLType { GL_CODE = glCode, DESCRIPTION = description });
+                    }
+                }
+            }
+            
+            if (items.Count == 0)
+            {
+                ShowSnackbarMessage("No valid data to save", "error");
+                return;
+            }
+            
+            // Save bulk data
+            int transactionLogId = LogHelper.CreateTransactionLog(Session, Request);
+            int compId = GetCurrentCompId();
+            int savedCount = 0;
+            int duplicateCount = 0;
+            int invalidCount = 0;
+            
+            using (OracleConnection conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+                OracleTransaction transaction = conn.BeginTransaction();
+                
+                try
+                {
+                    string getIdQuery = "SELECT NVL(MAX(SUB_LEDGER_ID), 0) FROM GL_SL_TYPE";
+                    OracleCommand getIdCmd = new OracleCommand(getIdQuery, conn);
+                    int nextId = Convert.ToInt32(getIdCmd.ExecuteScalar()) + 1;
+                    
+                    string insertQuery = @"INSERT INTO GL_SL_TYPE 
+                        (SUB_LEDGER_ID, DESCRIP, COMP_ID, GL_CODE, FAMILY, LOG_ID)
+                        VALUES 
+                        (:subLedgerId, :descrip, :compId, :glCode, :family, :logId)";
+                    
+                    OracleCommand insertCmd = new OracleCommand(insertQuery, conn);
+                    
+                    foreach (var item in items)
+                    {
+                        // Validate GL Code exists
+                        string validateQuery = "SELECT COUNT(*) FROM GL_GLMF WHERE GL_CODE = :glCode AND ACTIVE = 1";
+                        OracleCommand validateCmd = new OracleCommand(validateQuery, conn);
+                        validateCmd.Parameters.Add("glCode", OracleDbType.Varchar2).Value = item.GL_CODE;
+                        int glExists = Convert.ToInt32(validateCmd.ExecuteScalar());
+                        
+                        if (glExists == 0)
+                        {
+                            invalidCount++;
+                            continue;
+                        }
+                        
+                        // Check duplicate
+                        string checkQuery = "SELECT COUNT(*) FROM GL_SL_TYPE WHERE GL_CODE = :glCode AND UPPER(DESCRIP) = UPPER(:descrip)";
+                        OracleCommand checkCmd = new OracleCommand(checkQuery, conn);
+                        checkCmd.Parameters.Add("glCode", OracleDbType.Varchar2).Value = item.GL_CODE;
+                        checkCmd.Parameters.Add("descrip", OracleDbType.Varchar2).Value = item.DESCRIPTION;
+                        int exists = Convert.ToInt32(checkCmd.ExecuteScalar());
+                        
+                        if (exists > 0)
+                        {
+                            duplicateCount++;
+                            continue;
+                        }
+                        
+                        // Get Family
+                        string familyQuery = "SELECT FAMILY FROM GL_GLMF WHERE GL_CODE = :glCode";
+                        OracleCommand familyCmd = new OracleCommand(familyQuery, conn);
+                        familyCmd.Parameters.Add("glCode", OracleDbType.Varchar2).Value = item.GL_CODE;
+                        object familyResult = familyCmd.ExecuteScalar();
+                        string family = familyResult != null ? familyResult.ToString() : "";
+                        
+                        insertCmd.Parameters.Clear();
+                        insertCmd.Parameters.Add("subLedgerId", OracleDbType.Int32).Value = nextId++;
+                        insertCmd.Parameters.Add("descrip", OracleDbType.Varchar2).Value = item.DESCRIPTION;
+                        insertCmd.Parameters.Add("compId", OracleDbType.Int32).Value = compId;
+                        insertCmd.Parameters.Add("glCode", OracleDbType.Varchar2).Value = item.GL_CODE;
+                        insertCmd.Parameters.Add("family", OracleDbType.Varchar2).Value = family;
+                        insertCmd.Parameters.Add("logId", OracleDbType.Int32).Value = transactionLogId;
+                        
+                        insertCmd.ExecuteNonQuery();
+                        savedCount++;
+                    }
+                    
+                    transaction.Commit();
+                    
+                    string message = savedCount+" record(s) saved successfully.";
+                    if (duplicateCount > 0) message += duplicateCount+" duplicate(s) skipped.";
+                    if (invalidCount > 0) message += invalidCount+" invalid GL Code(s) skipped.";
+                    
+                    ShowSnackbarMessage(message, "success");
+                    ShowStatus(message, "success");
+                    
+                    // Refresh grid with empty rows
+                    InitializeBulkGrid();
+                    GenerateNewSLId();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    ShowSnackbarMessage("Database error: " + ex.Message, "error");
+                    ShowStatus("Error: " + ex.Message, "error");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowSnackbarMessage("Error saving data: " + ex.Message, "error");
+            ShowStatus("Error: " + ex.Message, "error");
+        }
     }
 
     #endregion
@@ -142,7 +365,6 @@ public partial class payable_sl_type : System.Web.UI.Page
             if (!ValidateForm())
                 return;
 
-            // CREATE NEW LOG ENTRY FOR THIS TRANSACTION
             int transactionLogId = LogHelper.CreateTransactionLog(Session, Request);
 
             using (OracleConnection conn = new OracleConnection(connectionString))
@@ -164,10 +386,9 @@ public partial class payable_sl_type : System.Web.UI.Page
 
                     transaction.Commit();
 
-                    // Update session with new log ID for next transaction
                     Session["CurrentLogId"] = transactionLogId;
 
-                    ShowMessage("Receivable SL Type saved successfully!");
+                    ShowSnackbarMessage("Payable SL Type saved successfully!", "success");
                     ShowStatus("Record saved successfully!", "success");
                     hfCurrentMode.Value = "EDIT";
 
@@ -176,14 +397,14 @@ public partial class payable_sl_type : System.Web.UI.Page
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    ShowMessage("Database error: " + ex.Message);
+                    ShowSnackbarMessage("Database error: " + ex.Message, "error");
                     ShowStatus("Error: " + ex.Message, "error");
                 }
             }
         }
         catch (Exception ex)
         {
-            ShowMessage("Error saving data: " + ex.Message);
+            ShowSnackbarMessage("Error saving data: " + ex.Message, "error");
             ShowStatus("Error: " + ex.Message, "error");
         }
     }
@@ -211,24 +432,23 @@ public partial class payable_sl_type : System.Web.UI.Page
     {
         if (string.IsNullOrEmpty(txtGLCode.Text.Trim()))
         {
-            ShowMessage("Please select a GL Code");
+            ShowSnackbarMessage("Please select a GL Code", "error");
             txtGLCode.Focus();
             return false;
         }
 
         if (string.IsNullOrEmpty(txtDescription.Text.Trim()))
         {
-            ShowMessage("Please enter GL SL Description");
+            ShowSnackbarMessage("Please enter GL SL Description", "error");
             txtDescription.Focus();
             return false;
         }
 
-        // Check for duplicate description for same GL Code (optional)
         if (hfCurrentMode.Value == "ADD")
         {
             if (IsDuplicateDescription(txtGLCode.Text.Trim(), txtDescription.Text.Trim()))
             {
-                ShowMessage("This description already exists for the selected GL Code");
+                ShowSnackbarMessage("This description already exists for the selected GL Code", "error");
                 txtDescription.Focus();
                 return false;
             }
@@ -275,6 +495,12 @@ public partial class payable_sl_type : System.Web.UI.Page
         GenerateNewSLId();
     }
 
+    private void ShowSnackbarMessage(string message, string type)
+    {
+        string script = "showSnackbar('" + message.Replace("'", "\\'") + "', '" + type + "');";
+        ScriptManager.RegisterStartupScript(this, GetType(), "SnackbarMessage", script, true);
+    }
+
     private void ShowMessage(string message)
     {
         lblMessage.Text = message;
@@ -293,15 +519,17 @@ public partial class payable_sl_type : System.Web.UI.Page
         statusContainer.Attributes["class"] = "status-label " + (type == "success" ? "status-success" : "status-error");
     }
 
-    private int GetCurrentLogId()
-    {
-        return LogHelper.GetCurrentLogId(Session, Request);
-    }
-
     private int GetCurrentCompId()
     {
         return Session["CurrentCompId"] != null ? Convert.ToInt32(Session["CurrentCompId"]) : 1;
     }
 
     #endregion
+}
+
+// Bulk SL Type Class
+public class BulkSLType
+{
+    public string GL_CODE { get; set; }
+    public string DESCRIPTION { get; set; }
 }
