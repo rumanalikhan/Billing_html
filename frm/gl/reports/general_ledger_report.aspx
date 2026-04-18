@@ -19,7 +19,6 @@
             min-height: 100vh;
         }
 
-        /* Header container - flexbox for same row like Chart of Accounts */
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -125,7 +124,7 @@
             font-size: 12px;
         }
 
-        .filter-group input {
+        .filter-group input, .filter-group select {
             padding: 6px 10px;
             border: 1px solid #ced4da;
             border-radius: 4px;
@@ -193,7 +192,6 @@
             background: #f2f2f2;
         }
 
-        /* Fixed column widths */
         .report-table th:nth-child(1) { width: 8%; }
         .report-table th:nth-child(2) { width: 12%; }
         .report-table th:nth-child(3) { width: 8%; }
@@ -241,62 +239,71 @@
             padding-top: 10px;
         }
 
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                margin: 0;
-            }
+       @media print {
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+    }
 
-            .no-print {
-                display: none !important;
-            }
+    .no-print {
+        display: none !important;
+    }
 
-            .header-container {
-                display: none !important;
-            }
+    .header-container {
+        display: none !important;
+    }
 
-            .report-container {
-                padding: 5px;
-                width: 100%;
-            }
+    .report-container {
+        padding: 5px;
+        width: 100%;
+    }
 
-            .table-wrapper {
-                overflow: visible !important;
-                border: none;
-                width: 100%;
-            }
+    .table-wrapper {
+        overflow: visible !important;
+        border: none;
+        width: 100%;
+        page-break-after: avoid;
+    }
 
-            .report-table {
-                width: 100%;
-                table-layout: auto;
-                font-size: 9px;
-            }
+    .report-table {
+        width: 100%;
+        table-layout: auto;
+        font-size: 9px;
+        page-break-inside: auto;
+    }
 
-            .report-table th,
-            .report-table td {
-                border: 1px solid #000 !important;
-                padding: 4px;
-            }
+    .report-table th,
+    .report-table td {
+        border: 1px solid #000 !important;
+        padding: 4px;
+    }
 
-            .report-table th {
-                background: #0f7c57 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
+    .report-table th {
+        background: #0f7c57 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 
-            .total-row td {
-                background: #dcdcdc !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
+    .total-row td {
+        background: #dcdcdc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 
-            .footer {
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-            }
-        }
+    .report-table tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    .footer {
+        position: relative !important;
+        bottom: auto !important;
+        margin-top: 20px;
+        page-break-before: avoid;
+        page-break-after: avoid;
+    }
+}
     </style>
     <script type="text/javascript">
         function displayPageNumbers() {
@@ -312,17 +319,16 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <!-- Header like Chart of Accounts -->
-       <div class="no-print">
-    <div class="header-container">
-        <h1>General Ledger Report</h1>
-        <div class="button-group">
-            <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print Report" CssClass="print-btn" OnClientClick="window.print();return false;" />
-            <asp:Button ID="btnExcel" runat="server" Text="📊 Export Excel" CssClass="print-btn" OnClick="btnExcel_Click" />
-            <asp:Button ID="btnBack" runat="server" Text="< Go Back" CssClass="back-btn" OnClick="btnBack_Click" />
+        <div class="no-print">
+            <div class="header-container">
+                <h1>General Ledger Report</h1>
+                <div class="button-group">
+                    <asp:Button ID="btnPrint" runat="server" Text="🖨️ Print Report" CssClass="print-btn" OnClientClick="window.print();return false;" />
+                    <asp:Button ID="btnExcel" runat="server" Text="📊 Export Excel" CssClass="print-btn" OnClick="btnExcel_Click" />
+                    <asp:Button ID="btnBack" runat="server" Text="< Go Back" CssClass="back-btn" OnClick="btnBack_Click" />
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
         <div class="report-container">
             <div class="company-header">
@@ -330,7 +336,6 @@
                 <div class="company-sub">GL ACCOUNTING SYSTEM</div>
             </div>
 
-            <!-- Report Header with Date/Time -->
             <div class="report-header">
                 <div>General Ledger Report</div>
                 <div><asp:Label ID="lblReportDateTime" runat="server" /></div>
@@ -352,6 +357,14 @@
                 <div class="filter-group">
                     <label>To Account:</label>
                     <asp:TextBox ID="txtToAccount" runat="server" Width="100px" placeholder="Optional" />
+                </div>
+                <div class="filter-group">
+                    <label>Posting Status:</label>
+                    <asp:DropDownList ID="ddlPostingStatus" runat="server">
+                        <asp:ListItem Text="Posted Only" Value="Posted" Selected="True" />
+                        <asp:ListItem Text="Unposted Only" Value="Unposted" />
+                        <asp:ListItem Text="All Vouchers" Value="All" />
+                    </asp:DropDownList>
                 </div>
                 <div class="button-container">
                     <asp:Button ID="btnSearch" runat="server" Text="Search" OnClick="btnSearch_Click" CssClass="btn-search" />
@@ -388,7 +401,6 @@
                 </asp:GridView>
             </div>
 
-            <!-- Footer with Page Number -->
             <div class="footer">
                 This is a computer generated document - No signature required<br />
                 Page 1 of 1

@@ -51,12 +51,14 @@ public partial class trial_balance : System.Web.UI.Page
             DateTime openingDate = DateTime.Parse(txtOpeningDate.Text);
             DateTime fromDate = DateTime.Parse(txtFromDate.Text);
             DateTime toDate = DateTime.Parse(txtToDate.Text);
+            string postingStatus = ddlPostingStatus.SelectedValue;
+            bool showZeroOpening = chkShowZeroOpening.Checked;
 
             lblOpeningDate.Text = openingDate.ToString("dd-MM-yyyy");
             lblFromDate.Text = fromDate.ToString("dd-MM-yyyy");
             lblToDate.Text = toDate.ToString("dd-MM-yyyy");
 
-            DataTable dt = GetTrialBalanceData(openingDate, fromDate, toDate);
+            DataTable dt = GetTrialBalanceData(openingDate, fromDate, toDate, postingStatus, showZeroOpening);
 
             if (dt.Rows.Count > 0)
             {
@@ -78,7 +80,8 @@ public partial class trial_balance : System.Web.UI.Page
             lblStatus.ForeColor = Color.Red;
         }
     }
-    private DataTable GetTrialBalanceData(DateTime openingDate, DateTime fromDate, DateTime toDate)
+
+    private DataTable GetTrialBalanceData(DateTime openingDate, DateTime fromDate, DateTime toDate, string postingStatus, bool showZeroOpening)
     {
         DataTable dt = new DataTable();
 
@@ -86,37 +89,50 @@ public partial class trial_balance : System.Web.UI.Page
         {
             conn.Open();
 
+            string postCondition = "";
+            if (postingStatus == "Posted")
+                postCondition = " AND f.POST = 1";
+            else if (postingStatus == "Unposted")
+                postCondition = " AND f.POST = 0";
+
             string query = @"
-                SELECT 
-                    g.GL_CODE,
-                    g.GL_DESCRP,
-                    g.LEVELL,
-                    NVL(ob.OPENING_BALANCE, 0) AS OPENING_BALANCE,
-                    NVL((
-                        SELECT SUM(v.AMOUNT)
-                        FROM GL_VOUCHERS v
-                        INNER JOIN GL_FORMS f ON v.VOUCHER_KEY = f.VOUCHER_KEY
-                        WHERE v.GL_CODE = g.GL_CODE
-                        AND f.VOUCHER_DATE BETWEEN :FromDate AND :ToDate
-                        AND f.POST = 1
-                        AND v.DR_CR IN ('2', 'D')
-                        AND v.COMP_ID = :CompId
-                    ), 0) AS PERIOD_DEBIT,
-                    NVL((
-                        SELECT SUM(v.AMOUNT)
-                        FROM GL_VOUCHERS v
-                        INNER JOIN GL_FORMS f ON v.VOUCHER_KEY = f.VOUCHER_KEY
-                        WHERE v.GL_CODE = g.GL_CODE
-                        AND f.VOUCHER_DATE BETWEEN :FromDate AND :ToDate
-                        AND f.POST = 1
-                        AND v.DR_CR IN ('1', 'C')
-                        AND v.COMP_ID = :CompId
-                    ), 0) AS PERIOD_CREDIT
-                FROM GL_GLMF g
-                LEFT JOIN GL_GLMF_OPENING_BALANCE ob ON g.GL_CODE = ob.GL_CODE AND ob.COMP_ID = :CompId
-                WHERE g.COMP_ID = :CompId
-                AND g.ACTIVE = '1'
-                ORDER BY g.GL_CODE";
+            SELECT 
+                g.GL_CODE,
+                g.GL_DESCRP,
+                g.LEVELL,
+                NVL(ob.OPENING_BALANCE, 0) AS OPENING_BALANCE,
+                NVL((
+                    SELECT SUM(v.AMOUNT)
+                    FROM GL_VOUCHERS v
+                    INNER JOIN GL_FORMS f ON v.VOUCHER_KEY = f.VOUCHER_KEY
+                    WHERE v.GL_CODE = g.GL_CODE
+                    AND f.VOUCHER_DATE BETWEEN :FromDate AND :ToDate
+                    " + postCondition + @"
+                    AND v.DR_CR IN ('2', 'D')
+                    AND v.COMP_ID = :CompId
+                ), 0) AS PERIOD_DEBIT,
+                NVL((
+                    SELECT SUM(v.AMOUNT)
+                    FROM GL_VOUCHERS v
+                    INNER JOIN GL_FORMS f ON v.VOUCHER_KEY = f.VOUCHER_KEY
+                    WHERE v.GL_CODE = g.GL_CODE
+                    AND f.VOUCHER_DATE BETWEEN :FromDate AND :ToDate
+                    " + postCondition + @"
+                    AND v.DR_CR IN ('1', 'C')
+                    AND v.COMP_ID = :CompId
+                ), 0) AS PERIOD_CREDIT
+            FROM GL_GLMF g
+            LEFT JOIN GL_GLMF_OPENING_BALANCE ob ON g.GL_CODE = ob.GL_CODE AND ob.COMP_ID = :CompId
+            WHERE g.COMP_ID = :CompId
+            AND g.ACTIVE = '1' ";
+
+            // If NOT showing zero opening balances, exclude rows where OPENING_BALANCE = 0
+            if (!showZeroOpening)
+            {
+                query += " AND NVL(ob.OPENING_BALANCE, 0) != 0";
+            }
+
+            query += " ORDER BY g.GL_CODE";
 
             OracleCommand cmd = new OracleCommand(query, conn);
             cmd.Parameters.Add("FromDate", OracleDbType.Date).Value = fromDate;
@@ -141,7 +157,6 @@ public partial class trial_balance : System.Web.UI.Page
             decimal periodCredit = Convert.ToDecimal(row["PERIOD_CREDIT"]);
             decimal closing = opening + periodDebit - periodCredit;
 
-            // SPLIT OPENING BALANCE
             if (opening >= 0)
             {
                 row["OPENING_DEBIT"] = opening;
@@ -153,7 +168,6 @@ public partial class trial_balance : System.Web.UI.Page
                 row["OPENING_CREDIT"] = Math.Abs(opening);
             }
 
-            // SPLIT CLOSING BALANCE
             if (closing >= 0)
             {
                 row["CLOSING_DEBIT"] = closing;
@@ -177,58 +191,11 @@ public partial class trial_balance : System.Web.UI.Page
             string description = row["GL_DESCRP"].ToString();
 
             if (level == 2)
-            {
                 row["GL_DESCRP"] = "    " + description;
-            }
             else if (level == 3)
-            {
                 row["GL_DESCRP"] = "        " + description;
-            }
             else if (level == 4)
-            {
                 row["GL_DESCRP"] = "            " + description;
-            }
-        }
-    }
-
-    protected void gvReport_RowDataBound(object sender, GridViewRowEventArgs e)
-    {
-        if (e.Row.RowType == DataControlRowType.DataRow)
-        {
-            DataRowView row = (DataRowView)e.Row.DataItem;
-
-            int level = Convert.ToInt32(row["LEVELL"]);
-
-            if (level == 1)
-            {
-                e.Row.CssClass = "level-1";
-            }
-            else if (level == 2)
-            {
-                e.Row.CssClass = "level-2";
-            }
-            else if (level == 3)
-            {
-                e.Row.CssClass = "level-3";
-            }
-            else if (level == 4)
-            {
-                e.Row.CssClass = "level-4";
-            }
-
-            // Color CREDIT balances in RED (Opening Credit - column index 3)
-            decimal openingCredit = Convert.ToDecimal(row["OPENING_CREDIT"]);
-            if (openingCredit > 0)
-            {
-                e.Row.Cells[3].CssClass = "credit-balance";
-            }
-
-            // Color CREDIT balances in RED (Closing Credit - column index 7)
-            decimal closingCredit = Convert.ToDecimal(row["CLOSING_CREDIT"]);
-            if (closingCredit > 0)
-            {
-                e.Row.Cells[7].CssClass = "credit-balance";
-            }
         }
     }
 
@@ -239,28 +206,23 @@ public partial class trial_balance : System.Web.UI.Page
             DateTime openingDate = DateTime.Parse(txtOpeningDate.Text);
             DateTime fromDate = DateTime.Parse(txtFromDate.Text);
             DateTime toDate = DateTime.Parse(txtToDate.Text);
+            string postingStatus = ddlPostingStatus.SelectedValue;
+            bool showZeroOpening = chkShowZeroOpening.Checked;
 
-            DataTable dt = GetTrialBalanceData(openingDate, fromDate, toDate);
+            DataTable dt = GetTrialBalanceData(openingDate, fromDate, toDate, postingStatus, showZeroOpening);
 
-            // Apply indentation for Excel using non-breaking spaces
+            // Apply indentation for Excel using spaces
             foreach (DataRow row in dt.Rows)
             {
                 int level = Convert.ToInt32(row["LEVELL"]);
                 string description = row["GL_DESCRP"].ToString();
 
-                // Use non-breaking spaces (&nbsp;) for Excel
                 if (level == 2)
-                {
                     row["GL_DESCRP"] = "    " + description;
-                }
                 else if (level == 3)
-                {
                     row["GL_DESCRP"] = "        " + description;
-                }
                 else if (level == 4)
-                {
                     row["GL_DESCRP"] = "            " + description;
-                }
             }
 
             Response.Clear();
@@ -286,36 +248,24 @@ public partial class trial_balance : System.Web.UI.Page
             html.Append("<h4>TRIAL BALANCE REPORT</h4>");
             html.Append("<p>Opening As On: " + openingDate.ToString("dd-MM-yyyy") + "</p>");
             html.Append("<p>Period: " + fromDate.ToString("dd-MM-yyyy") + " To " + toDate.ToString("dd-MM-yyyy") + "</p>");
+            html.Append("<p>Posting Status: " + ddlPostingStatus.SelectedItem.Text + "</p>");
+            html.Append("<p>Include zero opening balance: " + (showZeroOpening ? "Yes" : "No") + "</p>");
             html.Append("</div>");
 
             html.Append("<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse; width:100%;'>");
 
-            // Header Row 1 - Main categories
+            // Header Row 1
             html.Append("<tr style='background-color:#0f7c57; color:white;'>");
-            html.Append("<th rowspan='2'>CODE</th>");
-            html.Append("<th rowspan='2'>TITLE</th>");
-            html.Append("<th colspan='2'>OPENING BALANCE</th>");
-            html.Append("<th colspan='2'>PERIOD</th>");
-            html.Append("<th colspan='2'>CLOSING BALANCE</th>");
-            html.Append("</tr>");
-
-            // Header Row 2 - Debit/Credit
-            html.Append("<tr style='background-color:#0f7c57; color:white;'>");
-            html.Append("<th>DEBIT</th><th>CREDIT</th>");
-            html.Append("<th>DEBIT</th><th>CREDIT</th>");
-            html.Append("<th>DEBIT</th><th>CREDIT</th>");
-            html.Append("</tr>");
+            html.Append("<th rowspan='2'>CODE</th><th rowspan='2'>TITLE</th>");
+            html.Append("<th colspan='2'>OPENING BALANCE</th><th colspan='2'>PERIOD</th><th colspan='2'>CLOSING BALANCE</th>");
+            html.Append("</tr><tr style='background-color:#0f7c57; color:white;'>");
+            html.Append("<th>DEBIT</th><th>CREDIT</th><th>DEBIT</th><th>CREDIT</th><th>DEBIT</th><th>CREDIT</th></tr>");
 
             foreach (DataRow row in dt.Rows)
             {
                 int level = Convert.ToInt32(row["LEVELL"]);
                 string title = row["GL_DESCRP"].ToString();
-
-                // Add CSS class for indentation based on level
-                string indentClass = "";
-                if (level == 2) indentClass = "indent-2";
-                else if (level == 3) indentClass = "indent-3";
-                else if (level == 4) indentClass = "indent-4";
+                string indentClass = level == 2 ? "indent-2" : (level == 3 ? "indent-3" : (level == 4 ? "indent-4" : ""));
 
                 decimal openingDebit = Convert.ToDecimal(row["OPENING_DEBIT"]);
                 decimal openingCredit = Convert.ToDecimal(row["OPENING_CREDIT"]);
@@ -340,8 +290,7 @@ public partial class trial_balance : System.Web.UI.Page
             html.Append("</table>");
             html.Append("<div style='margin-top:20px; text-align:center; font-size:9px; color:#999;'>");
             html.Append("This is a computer generated document - No signature required");
-            html.Append("</div>");
-            html.Append("</body></html>");
+            html.Append("</div></body></html>");
 
             Response.Write(html.ToString());
             Response.End();
@@ -357,7 +306,6 @@ public partial class trial_balance : System.Web.UI.Page
     {
         DataRowView row = (DataRowView)dataItem;
         int level = Convert.ToInt32(row["LEVELL"]);
-
         if (level == 1) return "level-1";
         if (level == 2) return "level-2";
         if (level == 3) return "level-3";
@@ -371,18 +319,13 @@ public partial class trial_balance : System.Web.UI.Page
         {
             DataRowView row = (DataRowView)e.Item.DataItem;
 
-            // Color CREDIT balances in RED
             Label lblOpeningCredit = (Label)e.Item.FindControl("lblOpeningCredit");
             if (lblOpeningCredit != null && Convert.ToDecimal(row["OPENING_CREDIT"]) > 0)
-            {
                 lblOpeningCredit.CssClass = "credit-balance";
-            }
 
             Label lblClosingCredit = (Label)e.Item.FindControl("lblClosingCredit");
             if (lblClosingCredit != null && Convert.ToDecimal(row["CLOSING_CREDIT"]) > 0)
-            {
                 lblClosingCredit.CssClass = "credit-balance";
-            }
         }
     }
 
