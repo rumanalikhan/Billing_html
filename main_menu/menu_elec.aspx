@@ -158,6 +158,9 @@
 
                 <asp:Button ID="btnApprovedChanges" runat="server" CssClass="menu-button"
                     Text="Approved Changes" OnClick="btnApprovedChanges_Click" />
+
+                <asp:Button ID="btnMeterInstallment" runat="server" CssClass="menu-button"
+                    Text="Meter Installments" OnClick="btnMeterInstallments_Click" />
             </div>
         </div>
     </div>

@@ -80,4 +80,9 @@ public partial class menu_elec : Page
     {
        Response.Redirect("~/frm/billing/elec/elec_bill_posting.aspx");
     }
+
+    protected void btnMeterInstallments_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("~/frm/billing/elec/meter_inst.aspx");
+    }
 }
