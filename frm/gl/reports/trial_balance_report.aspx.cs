@@ -20,7 +20,13 @@ public partial class trial_balance : System.Web.UI.Page
 
             SetDefaultDates();
             lblReportDateTime.Text = DateTime.Now.ToString("dd/MM/yyyy hh:mm tt");
-            LoadReport();
+
+            // DO NOT auto-load report - wait for user to click Search
+            // Just show empty state
+            rptReport.DataSource = null;
+            rptReport.DataBind();
+            lblStatus.Text = "Please select criteria and click Search to load report.";
+            lblStatus.ForeColor = Color.Blue;
         }
     }
 
@@ -31,6 +37,7 @@ public partial class trial_balance : System.Web.UI.Page
 
         txtOpeningDate.Text = new DateTime(year, 6, 30).ToString("yyyy-MM-dd");
         txtFromDate.Text = new DateTime(year, 7, 1).ToString("yyyy-MM-dd");
+        // Set To Date to today's date (not future)
         txtToDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
     }
 
@@ -72,6 +79,8 @@ public partial class trial_balance : System.Web.UI.Page
             {
                 lblStatus.Text = "No data found for selected period.";
                 lblStatus.ForeColor = Color.Red;
+                rptReport.DataSource = null;
+                rptReport.DataBind();
             }
         }
         catch (Exception ex)
@@ -100,43 +109,14 @@ public partial class trial_balance : System.Web.UI.Page
                 g.GL_CODE,
                 g.GL_DESCRP,
                 g.LEVELL,
-                NVL(ob.OPENING_BALANCE, 0) AS OPENING_BALANCE,
-                NVL((
-                    SELECT SUM(v.AMOUNT)
-                    FROM GL_VOUCHERS v
-                    INNER JOIN GL_FORMS f ON v.VOUCHER_KEY = f.VOUCHER_KEY
-                    WHERE v.GL_CODE = g.GL_CODE
-                    AND f.VOUCHER_DATE BETWEEN :FromDate AND :ToDate
-                    " + postCondition + @"
-                    AND v.DR_CR IN ('2', 'D')
-                    AND v.COMP_ID = :CompId
-                ), 0) AS PERIOD_DEBIT,
-                NVL((
-                    SELECT SUM(v.AMOUNT)
-                    FROM GL_VOUCHERS v
-                    INNER JOIN GL_FORMS f ON v.VOUCHER_KEY = f.VOUCHER_KEY
-                    WHERE v.GL_CODE = g.GL_CODE
-                    AND f.VOUCHER_DATE BETWEEN :FromDate AND :ToDate
-                    " + postCondition + @"
-                    AND v.DR_CR IN ('1', 'C')
-                    AND v.COMP_ID = :CompId
-                ), 0) AS PERIOD_CREDIT
+                NVL(ob.OPENING_BALANCE, 0) AS OPENING_BALANCE
             FROM GL_GLMF g
             LEFT JOIN GL_GLMF_OPENING_BALANCE ob ON g.GL_CODE = ob.GL_CODE AND ob.COMP_ID = :CompId
             WHERE g.COMP_ID = :CompId
-            AND g.ACTIVE = '1' ";
-
-            // If NOT showing zero opening balances, exclude rows where OPENING_BALANCE = 0
-            if (!showZeroOpening)
-            {
-                query += " AND NVL(ob.OPENING_BALANCE, 0) != 0";
-            }
-
-            query += " ORDER BY g.GL_CODE";
+            AND (g.ACTIVE = '1' OR g.ACTIVE = 1)
+            ORDER BY g.GL_CODE";
 
             OracleCommand cmd = new OracleCommand(query, conn);
-            cmd.Parameters.Add("FromDate", OracleDbType.Date).Value = fromDate;
-            cmd.Parameters.Add("ToDate", OracleDbType.Date).Value = toDate;
             cmd.Parameters.Add("CompId", OracleDbType.Int32).Value = GetCurrentCompId();
 
             OracleDataAdapter da = new OracleDataAdapter(cmd);
@@ -144,28 +124,38 @@ public partial class trial_balance : System.Web.UI.Page
             conn.Close();
         }
 
-        // Add columns for split Debit/Credit
+        // Add period columns
+        dt.Columns.Add("PERIOD_DEBIT", typeof(decimal));
+        dt.Columns.Add("PERIOD_CREDIT", typeof(decimal));
         dt.Columns.Add("OPENING_DEBIT", typeof(decimal));
         dt.Columns.Add("OPENING_CREDIT", typeof(decimal));
         dt.Columns.Add("CLOSING_DEBIT", typeof(decimal));
         dt.Columns.Add("CLOSING_CREDIT", typeof(decimal));
 
+        // Calculate period transactions for each GL account in C#
         foreach (DataRow row in dt.Rows)
         {
-            decimal opening = Convert.ToDecimal(row["OPENING_BALANCE"]);
-            decimal periodDebit = Convert.ToDecimal(row["PERIOD_DEBIT"]);
-            decimal periodCredit = Convert.ToDecimal(row["PERIOD_CREDIT"]);
-            decimal closing = opening + periodDebit - periodCredit;
+            string glCode = row["GL_CODE"].ToString();
+            decimal openingBalance = Convert.ToDecimal(row["OPENING_BALANCE"]);
 
-            if (opening >= 0)
+            // Get period transactions
+            decimal periodDebit = GetPeriodAmount(glCode, fromDate, toDate, postingStatus, "DEBIT");
+            decimal periodCredit = GetPeriodAmount(glCode, fromDate, toDate, postingStatus, "CREDIT");
+
+            row["PERIOD_DEBIT"] = periodDebit;
+            row["PERIOD_CREDIT"] = periodCredit;
+
+            decimal closing = openingBalance + periodDebit - periodCredit;
+
+            if (openingBalance >= 0)
             {
-                row["OPENING_DEBIT"] = opening;
+                row["OPENING_DEBIT"] = openingBalance;
                 row["OPENING_CREDIT"] = 0;
             }
             else
             {
                 row["OPENING_DEBIT"] = 0;
-                row["OPENING_CREDIT"] = Math.Abs(opening);
+                row["OPENING_CREDIT"] = Math.Abs(openingBalance);
             }
 
             if (closing >= 0)
@@ -180,7 +170,60 @@ public partial class trial_balance : System.Web.UI.Page
             }
         }
 
+        // Filter out zero rows if needed
+        if (!showZeroOpening)
+        {
+            DataTable filtered = dt.Clone();
+            foreach (DataRow row in dt.Rows)
+            {
+                decimal openingBal = Convert.ToDecimal(row["OPENING_BALANCE"]);
+                decimal periodDebit = Convert.ToDecimal(row["PERIOD_DEBIT"]);
+                decimal periodCredit = Convert.ToDecimal(row["PERIOD_CREDIT"]);
+
+                if (openingBal != 0 || periodDebit != 0 || periodCredit != 0)
+                {
+                    filtered.ImportRow(row);
+                }
+            }
+            return filtered;
+        }
+
         return dt;
+    }
+
+    // Helper method to get period amounts
+    private decimal GetPeriodAmount(string glCode, DateTime fromDate, DateTime toDate, string postingStatus, string type)
+    {
+        using (OracleConnection conn = new OracleConnection(connectionString))
+        {
+            string postCondition = "";
+            if (postingStatus == "Posted")
+                postCondition = " AND f.POST = 1";
+            else if (postingStatus == "Unposted")
+                postCondition = " AND f.POST = 0";
+
+            string drCrCondition = (type == "DEBIT") ? "v.DR_CR IN ('2', 'D')" : "v.DR_CR IN ('1', 'C')";
+
+            string query = @"
+            SELECT NVL(SUM(v.AMOUNT), 0)
+            FROM GL_VOUCHERS v
+            INNER JOIN GL_FORMS f ON v.VOUCHER_KEY = f.VOUCHER_KEY
+            WHERE v.GL_CODE = :glCode
+            AND f.VOUCHER_DATE BETWEEN :fromDate AND :toDate
+            " + postCondition + @"
+            AND " + drCrCondition;
+
+            OracleCommand cmd = new OracleCommand(query, conn);
+            cmd.Parameters.Add("glCode", OracleDbType.Varchar2).Value = glCode;
+            cmd.Parameters.Add("fromDate", OracleDbType.Date).Value = fromDate;
+            cmd.Parameters.Add("toDate", OracleDbType.Date).Value = toDate;
+
+            conn.Open();
+            object result = cmd.ExecuteScalar();
+            conn.Close();
+
+            return result != null ? Convert.ToDecimal(result) : 0;
+        }
     }
 
     private void AddIndentation(DataTable dt)
@@ -259,7 +302,8 @@ public partial class trial_balance : System.Web.UI.Page
             html.Append("<th rowspan='2'>CODE</th><th rowspan='2'>TITLE</th>");
             html.Append("<th colspan='2'>OPENING BALANCE</th><th colspan='2'>PERIOD</th><th colspan='2'>CLOSING BALANCE</th>");
             html.Append("</tr><tr style='background-color:#0f7c57; color:white;'>");
-            html.Append("<th>DEBIT</th><th>CREDIT</th><th>DEBIT</th><th>CREDIT</th><th>DEBIT</th><th>CREDIT</th></tr>");
+            html.Append("<th>DEBIT</th><th>CREDIT</th><th>DEBIT</th><th>CREDIT</th><th>DEBIT</th><th>CREDIT</th>");
+            html.Append("</tr>");
 
             foreach (DataRow row in dt.Rows)
             {

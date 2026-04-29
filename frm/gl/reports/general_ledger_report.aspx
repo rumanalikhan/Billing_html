@@ -52,10 +52,10 @@
             transition: all 0.3s;
         }
 
-        .print-btn:hover, .back-btn:hover {
-            background-color: #333;
-            transform: translateY(-1px);
-        }
+            .print-btn:hover, .back-btn:hover {
+                background-color: #333;
+                transform: translateY(-1px);
+            }
 
         .report-container {
             width: 100%;
@@ -119,17 +119,17 @@
             gap: 8px;
         }
 
-        .filter-group label {
-            font-weight: 600;
-            font-size: 12px;
-        }
+            .filter-group label {
+                font-weight: 600;
+                font-size: 12px;
+            }
 
-        .filter-group input, .filter-group select {
-            padding: 6px 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 12px;
-        }
+            .filter-group input, .filter-group select {
+                padding: 6px 10px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                font-size: 12px;
+            }
 
         .button-container {
             margin-left: auto;
@@ -149,9 +149,9 @@
             color: white;
         }
 
-        .btn-search:hover {
-            background: #0a5e42;
-        }
+            .btn-search:hover {
+                background: #0a5e42;
+            }
 
         .table-wrapper {
             overflow-x: auto;
@@ -168,53 +168,88 @@
             min-width: 1100px;
         }
 
-        .report-table th {
-            background: #0f7c57;
-            color: white;
-            border: 1px solid #0a5e42;
-            padding: 10px 6px;
-            text-align: left;
-            font-weight: bold;
-            font-size: 11px;
-        }
+            .report-table th {
+                background: #0f7c57;
+                color: white;
+                border: 1px solid #0a5e42;
+                padding: 10px 6px;
+                text-align: left;
+                font-weight: bold;
+                font-size: 11px;
+            }
 
-        .report-table td {
-            border: 1px solid #e0e0e0;
-            padding: 8px 6px;
-            vertical-align: top;
-        }
+            .report-table td {
+                border: 1px solid #e0e0e0;
+                padding: 8px 6px;
+                vertical-align: top;
+            }
 
-        .report-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+            .report-table tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
 
-        .report-table tr:hover {
-            background: #f2f2f2;
-        }
+            .report-table tr:hover {
+                background: #f2f2f2;
+            }
 
-        .report-table th:nth-child(1) { width: 8%; }
-        .report-table th:nth-child(2) { width: 12%; }
-        .report-table th:nth-child(3) { width: 8%; }
-        .report-table th:nth-child(4) { width: 5%; }
-        .report-table th:nth-child(5) { width: 5%; }
-        .report-table th:nth-child(6) { width: 16%; }
-        .report-table th:nth-child(7) { width: 10%; }
-        .report-table th:nth-child(8) { width: 5%; }
-        .report-table th:nth-child(9) { width: 5%; }
-        .report-table th:nth-child(10) { width: 8%; }
-        .report-table th:nth-child(11) { width: 8%; }
-        .report-table th:nth-child(12) { width: 8%; }
+            .report-table th:nth-child(1) {
+                width: 8%;
+            }
+
+            .report-table th:nth-child(2) {
+                width: 12%;
+            }
+
+            .report-table th:nth-child(3) {
+                width: 8%;
+            }
+
+            .report-table th:nth-child(4) {
+                width: 5%;
+            }
+
+            .report-table th:nth-child(5) {
+                width: 5%;
+            }
+
+            .report-table th:nth-child(6) {
+                width: 16%;
+            }
+
+            .report-table th:nth-child(7) {
+                width: 10%;
+            }
+
+            .report-table th:nth-child(8) {
+                width: 5%;
+            }
+
+            .report-table th:nth-child(9) {
+                width: 5%;
+            }
+
+            .report-table th:nth-child(10) {
+                width: 8%;
+            }
+
+            .report-table th:nth-child(11) {
+                width: 8%;
+            }
+
+            .report-table th:nth-child(12) {
+                width: 8%;
+            }
 
         .total-row {
             background: #dcdcdc !important;
             font-weight: bold;
         }
 
-        .total-row td {
-            border-top: 2px solid #0f7c57;
-            border-bottom: 2px solid #0f7c57;
-            background: #dcdcdc;
-        }
+            .total-row td {
+                border-top: 2px solid #0f7c57;
+                border-bottom: 2px solid #0f7c57;
+                background: #dcdcdc;
+            }
 
         .text-right {
             text-align: right !important;
@@ -238,8 +273,102 @@
             border-top: 1px solid #ddd;
             padding-top: 10px;
         }
+        /* Grid Pagination Styles */
+        .grid-pager {
+            background-color: #e6e6e6;
+            padding: 10px;
+            text-align: center;
+        }
 
-       @media print {
+            .grid-pager a, .grid-pager span {
+                padding: 5px 10px;
+                margin: 0 2px;
+                border: 1px solid #ddd;
+                text-decoration: none;
+                color: #333;
+                display: inline-block;
+            }
+
+                .grid-pager a:hover {
+                    background-color: #0f7c57;
+                    color: white;
+                    border-color: #0a5e40;
+                }
+
+            .grid-pager span {
+                background-color: #0f7c57;
+                color: white;
+                border-color: #0a5e40;
+                font-weight: bold;
+            }
+
+        /*@media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .header-container {
+                display: none !important;
+            }
+
+            .report-container {
+                padding: 5px;
+                width: 100%;
+            }
+
+            .table-wrapper {
+                overflow: visible !important;
+                border: none;
+                width: 100%;
+                page-break-after: avoid;
+            }
+
+            .report-table {
+                width: 100%;
+                table-layout: auto;
+                font-size: 9px;
+                page-break-inside: auto;
+            }
+
+                .report-table th,
+                .report-table td {
+                    border: 1px solid #000 !important;
+                    padding: 4px;
+                }
+
+                .report-table th {
+                    background: #0f7c57 !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+
+            .total-row td {
+                background: #dcdcdc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .report-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            .footer {
+                position: relative !important;
+                bottom: auto !important;
+                margin-top: 20px;
+                page-break-before: avoid;
+                page-break-after: avoid;
+            }
+        }*/
+
+        @media print {
     body {
         background: white;
         padding: 0;
@@ -303,7 +432,18 @@
         page-break-before: avoid;
         page-break-after: avoid;
     }
+
+    /* Hide pagination when printing */
+    .grid-pager {
+        display: none !important;
+    }
+    
+    /* Hide the pager row */
+    .report-table tfoot tr {
+        display: none !important;
+    }
 }
+
     </style>
     <script type="text/javascript">
         function displayPageNumbers() {
@@ -338,7 +478,8 @@
 
             <div class="report-header">
                 <div>General Ledger Report</div>
-                <div><asp:Label ID="lblReportDateTime" runat="server" /></div>
+                <div>
+                    <asp:Label ID="lblReportDateTime" runat="server" /></div>
             </div>
 
             <div class="filter-section no-print">
@@ -372,14 +513,22 @@
             </div>
 
             <div class="report-period">
-                FROM: <asp:Label ID="lblFromDate" runat="server" />
-                TO: <asp:Label ID="lblToDate" runat="server" />
+                FROM:
+                <asp:Label ID="lblFromDate" runat="server" />
+                TO:
+                <asp:Label ID="lblToDate" runat="server" />
                 <asp:Label ID="lblAccountRange" runat="server" />
             </div>
 
             <div class="table-wrapper">
                 <asp:GridView ID="gvReport" runat="server" AutoGenerateColumns="false" CssClass="report-table"
-                    OnRowDataBound="gvReport_RowDataBound" ShowHeader="true" GridLines="None">
+                    OnRowDataBound="gvReport_RowDataBound" ShowHeader="true" GridLines="None"
+                    AllowPaging="true" PageSize="30" OnPageIndexChanging="gvReport_PageIndexChanging"
+                    AllowSorting="false">
+                    <PagerStyle CssClass="grid-pager" HorizontalAlign="Center" BackColor="#e6e6e6" />
+                    <PagerSettings Mode="NumericFirstLast" PageButtonCount="10"
+                        FirstPageText="« First" LastPageText="Last »"
+                        PreviousPageText="‹ Prev" NextPageText="Next ›" />
                     <Columns>
                         <asp:BoundField DataField="GL_CODE" HeaderText="GL CODE" />
                         <asp:BoundField DataField="GL_DESCRP" HeaderText="GL DESCRIPTION" />

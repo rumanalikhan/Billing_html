@@ -5,6 +5,8 @@ using System.Drawing;
 using System.Web.UI.WebControls;
 using Oracle.ManagedDataAccess.Client;
 using System.Web.UI;
+using System.IO;
+using System.Text;
 
 public partial class sub_ledger_report : System.Web.UI.Page
 {
@@ -30,7 +32,7 @@ public partial class sub_ledger_report : System.Web.UI.Page
         if (DateTime.Now.Month < 7) year--;
 
         txtFromDate.Text = new DateTime(year, 7, 1).ToString("yyyy-MM-dd");
-        txtToDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
+        txtToDate.Text = DateTime.Now.ToString("yyyy-MM-dd"); 
     }
 
     protected void btnSearch_Click(object sender, EventArgs e)
@@ -49,9 +51,11 @@ public partial class sub_ledger_report : System.Web.UI.Page
     protected void btnClear_Click(object sender, EventArgs e)
     {
         txtSLCode.Text = "";
-        txtFromDate.Text = new DateTime(DateTime.Now.Year, 7, 1).ToString("yyyy-MM-dd");
-        txtToDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
-        ddlPostingStatus.SelectedValue = "Posted";  // Reset to default
+        int year = DateTime.Now.Year;
+        if (DateTime.Now.Month < 7) year--;
+        txtFromDate.Text = new DateTime(year, 7, 1).ToString("yyyy-MM-dd");
+        txtToDate.Text = DateTime.Now.ToString("yyyy-MM-dd"); 
+        ddlPostingStatus.SelectedValue = "Posted";
         slInfo.Visible = false;
         periodInfo.Visible = false;
         gvReport.DataSource = null;
@@ -78,14 +82,8 @@ public partial class sub_ledger_report : System.Web.UI.Page
 
             string slName = GetSubLedgerName(slCode);
 
-            if (string.IsNullOrEmpty(slName))
-            {
-                ShowStatus("Sub Ledger Code not found: " + slCode, "error");
-                return;
-            }
-
             lblSLCode.Text = slCode;
-            lblSLName.Text = slName;
+            lblSLName.Text = string.IsNullOrEmpty(slName) ? slCode : slName;
             lblPrintDate.Text = DateTime.Now.ToString("dd/MM/yyyy hh:mm tt");
             slInfo.Visible = true;
 
@@ -131,10 +129,10 @@ public partial class sub_ledger_report : System.Web.UI.Page
 
         using (OracleConnection conn = new OracleConnection(connectionString))
         {
+            // Simplified query - removed GL_SL_GLMF join
             string query = @"
                 SELECT 
                     v.SL_CODE,
-                    s.DESCRIP AS SL_NAME,
                     f.VOUCHER_DATE,
                     f.VOUCHER_KEY,
                     v.GL_CODE,
@@ -145,18 +143,15 @@ public partial class sub_ledger_report : System.Web.UI.Page
                     v.DR_CR
                 FROM GL_VOUCHERS v
                 INNER JOIN GL_FORMS f ON v.VOUCHER_KEY = f.VOUCHER_KEY
-                INNER JOIN GL_SL_GLMF s ON v.SL_CODE = s.SL_CODE
                 LEFT JOIN GL_GLMF g ON v.GL_CODE = g.GL_CODE
                 WHERE v.SL_CODE = :slCode
                 AND f.VOUCHER_DATE BETWEEN :FromDate AND :ToDate
             ";
 
-            // Apply posting status filter using gl_forms.POST
             if (postingStatus == "Posted")
                 query += " AND f.POST = 1";
             else if (postingStatus == "Unposted")
                 query += " AND f.POST = 0";
-            // "All" adds no extra condition
 
             query += " ORDER BY f.VOUCHER_DATE, f.VOUCHER_KEY";
 
@@ -208,7 +203,7 @@ public partial class sub_ledger_report : System.Web.UI.Page
         openingRow["CHEQUE_NUMBER"] = "";
         openingRow["DEBIT"] = 0;
         openingRow["CREDIT"] = 0;
-        openingRow["RUNNING_BALANCE"] = Math.Abs(openingBalance);
+        openingRow["RUNNING_BALANCE"] = openingBalance;
         result.Rows.Add(openingRow);
 
         decimal runningBalance = openingBalance;
@@ -222,7 +217,6 @@ public partial class sub_ledger_report : System.Web.UI.Page
             newRow["VOUCHER_KEY"] = row["VOUCHER_KEY"];
             newRow["TRANS_DATE"] = Convert.ToDateTime(row["VOUCHER_DATE"]).ToString("dd-MM-yyyy");
 
-            string glCode = row["GL_CODE"].ToString();
             string glDesc = row["GL_DESCRIPTION"].ToString();
             string particulars = row["PARTICULARS"].ToString();
 
@@ -285,10 +279,13 @@ public partial class sub_ledger_report : System.Web.UI.Page
             if (isOpeningRow)
             {
                 e.Row.CssClass = "total-row";
-                e.Row.Cells[4].Text = "";
-                e.Row.Cells[5].Text = "";
+                e.Row.Cells[3].Text = ""; // CHEQUE column
+                e.Row.Cells[4].Text = ""; // DEBIT column
+                e.Row.Cells[5].Text = ""; // CREDIT column
+
                 decimal balance = Convert.ToDecimal(row["RUNNING_BALANCE"]);
-                e.Row.Cells[6].Text = balance.ToString("N2");
+                string drCr = balance >= 0 ? "DR" : "CR";
+                e.Row.Cells[6].Text = Math.Abs(balance).ToString("N2") + " " + drCr;
                 e.Row.Cells[6].HorizontalAlign = HorizontalAlign.Right;
                 return;
             }
@@ -307,8 +304,14 @@ public partial class sub_ledger_report : System.Web.UI.Page
                 e.Row.Cells[4].HorizontalAlign = HorizontalAlign.Right;
                 e.Row.Cells[5].Text = Convert.ToDecimal(row["CREDIT"]).ToString("N2");
                 e.Row.Cells[5].HorizontalAlign = HorizontalAlign.Right;
-                e.Row.Cells[6].Text = Convert.ToDecimal(row["RUNNING_BALANCE"]).ToString("N2");
+
+                decimal balance = Convert.ToDecimal(row["RUNNING_BALANCE"]);
+                string drCr = balance >= 0 ? "DR" : "CR";
+                e.Row.Cells[6].Text = Math.Abs(balance).ToString("N2") + " " + drCr;
                 e.Row.Cells[6].HorizontalAlign = HorizontalAlign.Right;
+
+                if (drCr == "CR")
+                    e.Row.Cells[6].ForeColor = Color.Red;
                 return;
             }
 
@@ -345,12 +348,6 @@ public partial class sub_ledger_report : System.Web.UI.Page
             string postingStatus = ddlPostingStatus.SelectedValue;
             string slName = GetSubLedgerName(slCode);
 
-            if (string.IsNullOrEmpty(slName))
-            {
-                ShowStatus("Sub Ledger Code not found: " + slCode, "error");
-                return;
-            }
-
             DataTable dt = GetSubLedgerData(slCode, fromDate, toDate, postingStatus);
 
             if (dt.Rows.Count == 0)
@@ -370,7 +367,7 @@ public partial class sub_ledger_report : System.Web.UI.Page
             Response.AddHeader("content-disposition", "attachment;filename=SubLedger_" + slCode + "_" + pakistanTime.ToString("yyyyMMdd_HHmmss") + ".xls");
             Response.Charset = "";
 
-            System.IO.StringWriter sw = new System.IO.StringWriter();
+            StringWriter sw = new StringWriter();
             HtmlTextWriter hw = new HtmlTextWriter(sw);
 
             hw.Write("<html><head><meta charset='UTF-8'><title>Sub Ledger Report</title>");
@@ -387,7 +384,6 @@ public partial class sub_ledger_report : System.Web.UI.Page
             hw.Write(".report-table td { padding: 8px; border: 1px solid #ddd; }");
             hw.Write(".amount-column { text-align: right; }");
             hw.Write(".total-row { background: #dcdcdc; font-weight: bold; }");
-            hw.Write(".credit-balance { color: red; font-weight: bold; }");
             hw.Write(".footer { margin-top: 20px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 10px; }");
             hw.Write("</style></head><body>");
 
@@ -403,13 +399,13 @@ public partial class sub_ledger_report : System.Web.UI.Page
             hw.Write("</div>");
 
             hw.Write("<div class='sl-info'>");
-            hw.Write("<strong>Sub Ledger:</strong> " + slCode + " - " + slName + "<br />");
+            hw.Write("<strong>Sub Ledger:</strong> " + slCode + " - " + (string.IsNullOrEmpty(slName) ? slCode : slName) + "<br />");
             hw.Write("<strong>Posting Status:</strong> " + ddlPostingStatus.SelectedItem.Text + "<br />");
             hw.Write("<strong>Printed On:</strong> " + pakistanTime.ToString("dd/MM/yyyy hh:mm tt"));
             hw.Write("</div>");
 
             hw.Write("<table class='report-table' cellspacing='0' cellpadding='4' border='1'>");
-            hw.Write("<thead><tr style='background-color:#0f7c57; color:white;'>");
+            hw.Write("<thead><tr>");
             hw.Write("<th>VOUCHER #</th><th>DATE</th><th>PARTICULARS</th><th>CHQ/SLIP</th>");
             hw.Write("<th>DEBIT</th><th>CREDIT</th><th>BALANCE</th>");
             hw.Write("</tr></thead><tbody>");
@@ -427,7 +423,8 @@ public partial class sub_ledger_report : System.Web.UI.Page
 
                 if (particulars == "OPENING BALANCE" || particulars == "TOTAL")
                 {
-                    runningBalanceText = Math.Abs(runningBalance).ToString("N2");
+                    string drCr = runningBalance >= 0 ? "DR" : "CR";
+                    runningBalanceText = Math.Abs(runningBalance).ToString("N2") + " " + drCr;
                 }
                 else
                 {
@@ -443,11 +440,7 @@ public partial class sub_ledger_report : System.Web.UI.Page
                 hw.Write("<td align='right'>" + (debit == 0 ? "" : debit.ToString("N2")) + "</td>");
                 hw.Write("<td align='right'>" + (credit == 0 ? "" : credit.ToString("N2")) + "</td>");
 
-                if (particulars == "OPENING BALANCE" || particulars == "TOTAL")
-                {
-                    hw.Write("<td align='right'>" + runningBalanceText + "</td>");
-                }
-                else if (runningBalance < 0)
+                if (runningBalance < 0 || (particulars != "OPENING BALANCE" && runningBalance < 0))
                 {
                     hw.Write("<td align='right' style='color:red;font-weight:bold;'>" + runningBalanceText + "</td>");
                 }
@@ -571,5 +564,10 @@ public partial class sub_ledger_report : System.Web.UI.Page
             lblStatus.ForeColor = Color.Red;
         else
             lblStatus.ForeColor = Color.Blue;
+    }
+
+    public override void VerifyRenderingInServerForm(System.Web.UI.Control control)
+    {
+        // Required for Excel export
     }
 }
